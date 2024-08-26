@@ -80,7 +80,7 @@ viewer.screenSpaceEventHandler.setInputAction(function (event) {
 
     // 构建消息对象
     const message = {
-      type: "MeshClick",
+      type: "meshClick",
       payload: {
         MouseLocation: MouseLocation,
         source: "cesiumMap",
