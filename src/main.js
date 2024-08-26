@@ -67,18 +67,18 @@ viewer.screenSpaceEventHandler.setInputAction(function (event) {
       var longitude = Math.toDegrees(cartographic.longitude);
       var latitude = Math.toDegrees(cartographic.latitude);
       var height = cartographic.height;
-
       // 构建位置对象
       var MouseLocation = {
           x: longitude,
           y: latitude,
           z: height
       };
-
       // 构建消息对象
       var message = {
-          action: 'MeshClick',
-          MouseLocation: MouseLocation,
+          type: 'MeshClick',
+          payload: {
+            MouseLocation: MouseLocation,
+          },
           source: 'cesiumMap',
       };
 
