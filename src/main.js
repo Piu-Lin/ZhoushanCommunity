@@ -240,10 +240,14 @@ function handleFlyTo(data) {
   const location = data.location;
   const rotation = data.rotation;
   const time = data.time;
+  
   const targetPosition = new Cartesian3(location.x, location.y, location.z);
-  const targetHeading = Math.toRadians(rotation.Y); // Rotation around Y axis
-  const targetPitch = Math.toRadians(rotation.X); // Rotation around X axis
-  const targetRoll = Math.toRadians(rotation.Z); // Rotation around Z axis
+  
+  // 根据常见的旋转定义，调整轴的对应关系
+  const targetHeading = Math.toRadians(rotation.Z); // 绕 Z 轴旋转 (heading)
+  const targetPitch = Math.toRadians(rotation.X);   // 绕 X 轴旋转 (pitch)
+  const targetRoll = Math.toRadians(rotation.Y);    // 绕 Y 轴旋转 (roll)
+  
   camera.flyTo({
     destination: targetPosition,
     duration: time,
