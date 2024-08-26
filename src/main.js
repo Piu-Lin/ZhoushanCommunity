@@ -210,21 +210,26 @@ window.addEventListener("message", function (event) {
     console.error("Failed to parse JSON:", error);
   }
 });
-
 function sendCameraInfo() {
   const position = camera.positionWC;
-  const direction = camera.directionWC;
-  const up = camera.upWC;
+
+  // 从相机的旋转四元数中提取 Heading, Pitch, Roll
+  const headingPitchRoll = Cesium.HeadingPitchRoll.fromQuaternion(camera.rotation);
+
+  // 获取相机的位置
   const location = {
     x: position.x,
     y: position.y,
     z: position.z,
   };
+
+  // 将旋转角度转换为度数并存储
   const rotation = {
-    X: direction.x,
-    Y: direction.y,
-    Z: direction.z,
+    heading: Cesium.Math.toDegrees(headingPitchRoll.heading), // 绕Z轴的旋转 (Heading)
+    pitch: Cesium.Math.toDegrees(headingPitchRoll.pitch),     // 绕X轴的旋转 (Pitch)
+    roll: Cesium.Math.toDegrees(headingPitchRoll.roll),       // 绕Y轴的旋转 (Roll)
   };
+  // 创建要发送的消息
   const message = {
     type: "info",
     payload: {
@@ -233,6 +238,7 @@ function sendCameraInfo() {
       rotation: rotation,
     },
   };
+  // 将消息发送给父类
   console.log("将向父类发送：", JSON.stringify(message));
   window.parent.postMessage(JSON.stringify(message), "*");
 }
