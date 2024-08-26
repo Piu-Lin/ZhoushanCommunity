@@ -27,12 +27,12 @@ const viewer = new Viewer("cesiumContainer", {
   navigationHelpButton: false, //帮助按钮
   navigationInstructionsInitiallyVisible: false,
 });
-var camera = viewer.camera;
+const camera = viewer.camera;
 
 // 相机旋转所用变量以下
-var rotationInterval;
-var centerPoint;
-var rotationSpeed;
+let rotationInterval;
+let centerPoint;
+let rotationSpeed;
 // 相机旋转所用变量以上
 
 viewer._cesiumWidget._creditContainer.style.display = "none";
@@ -57,29 +57,29 @@ const tilesetOptions = {
 };
 viewer.screenSpaceEventHandler.setInputAction(function (event) {
   // 使用Cesium的地形或模型拾取工具获取点击位置的地理坐标
-  var cartesian = viewer.scene.camera.pickEllipsoid(
+  const cartesian = viewer.scene.camera.pickEllipsoid(
     event.position,
     viewer.scene.globe.ellipsoid
   );
 
   if (cartesian) {
     // 将Cartesian坐标转换为地理坐标（经纬度）
-    var cartographic = Cartographic.fromCartesian(cartesian);
+    const cartographic = Cartographic.fromCartesian(cartesian);
 
     // 获取经度、纬度和高度
-    var longitude = Math.toDegrees(cartographic.longitude);
-    var latitude = Math.toDegrees(cartographic.latitude);
-    var height = cartographic.height;
+    const longitude = Math.toDegrees(cartographic.longitude);
+    const latitude = Math.toDegrees(cartographic.latitude);
+    const height = cartographic.height;
 
     // 构建位置对象
-    var MouseLocation = {
+    const MouseLocation = {
       x: longitude,
       y: latitude,
       z: height,
     };
 
     // 构建消息对象
-    var message = {
+    const message = {
       action: "MeshClick",
       MouseLocation: MouseLocation,
       source: "cesiumMap",
@@ -130,24 +130,28 @@ window.addEventListener("message", function (event) {
   const origin = event.origin;
   console.log("侦测到父页面消息");
   try {
-    if (event.source !== window.parent || JSON.stringify(message).includes("cesiumMap")) {
+    if (
+      event.source !== window.parent ||
+      JSON.stringify(message).includes("cesiumMap")
+    ) {
       return;
     }
     const data = message;
+    const payload = data.payload;
     console.log("解析父页面消息为:", data);
-    switch (data.action) {
+    switch (data.type) {
       case "info":
         console.log("侦测到获取相机位置需求");
         sendCameraInfo();
         break;
       case "flyTo":
         console.log("侦测到设置相机位置需求");
-        handleFlyTo(data);
+        handleFlyTo(payload);
 
         break;
       case "startRoate":
         console.log("侦测到开始旋转需求");
-        startRotation(data);
+        startRotation(payload);
         break;
       case "flyTow":
         console.log("侦测到停止旋转需求");
@@ -155,7 +159,7 @@ window.addEventListener("message", function (event) {
         break;
       case "setLookDistance":
         console.log("侦测到设置可视高度需求");
-        setLookDistance(data);
+        setLookDistance(payload);
         break;
       case "lookAt":
         console.log("侦测到飞向对象需求");
@@ -206,20 +210,20 @@ window.addEventListener("message", function (event) {
 });
 
 function sendCameraInfo() {
-  var position = camera.positionWC;
-  var direction = camera.directionWC;
-  var up = camera.upWC;
-  var location = {
+  const position = camera.positionWC;
+  const direction = camera.directionWC;
+  const up = camera.upWC;
+  const location = {
     x: position.x,
     y: position.y,
     z: position.z,
   };
-  var rotation = {
+  const rotation = {
     X: direction.x,
     Y: direction.y,
     Z: direction.z,
   };
-  var message = {
+  const message = {
     action: "info",
     location: location,
     source: "cesiumMap",
@@ -229,17 +233,13 @@ function sendCameraInfo() {
   window.parent.postMessage(JSON.stringify(message), "*");
 }
 function handleFlyTo(data) {
-  var location = data.location;
-  var rotation = data.rotation;
-  var time = data.time;
-  var targetPosition = new Cesium.Cartesian3(
-    location.x,
-    location.y,
-    location.z
-  );
-  var targetHeading = Cesium.Math.toRadians(rotation.Y); // Rotation around Y axis
-  var targetPitch = Cesium.Math.toRadians(rotation.X); // Rotation around X axis
-  var targetRoll = Cesium.Math.toRadians(rotation.Z); // Rotation around Z axis
+  const location = data.location;
+  const rotation = data.rotation;
+  const time = data.time;
+  const targetPosition = new Cartesian3(location.x, location.y, location.z);
+  const targetHeading = Math.toRadians(rotation.Y); // Rotation around Y axis
+  const targetPitch = Math.toRadians(rotation.X); // Rotation around X axis
+  const targetRoll = Math.toRadians(rotation.Z); // Rotation around Z axis
   camera.flyTo({
     destination: targetPosition,
     duration: time,
@@ -252,28 +252,28 @@ function handleFlyTo(data) {
 }
 
 function startRotation(data) {
-  var point = data.Point;
-  var speed = data.Speed;
-  centerPoint = new Cesium.Cartesian3(point.x, point.y, point.z);
+  const point = data.point;
+  const speed = data.speed;
+  centerPoint = new Cartesian3(point.x, point.y, point.z);
   rotationSpeed = speed;
 
   if (rotationInterval) {
     clearInterval(rotationInterval);
   }
-  var angle = 0;
+  let angle = 0;
   rotationInterval = setInterval(function () {
     angle += rotationSpeed * 0.01;
     if (angle >= 2 * Math.PI) {
       angle -= 2 * Math.PI;
     }
-    var radius = Cesium.Cartesian3.distance(camera.positionWC, centerPoint);
-    var x = centerPoint.x + radius * Math.cos(angle);
-    var y = centerPoint.y + radius * Math.sin(angle);
+    const radius = Cartesian3.distance(camera.positionWC, centerPoint);
+    const x = centerPoint.x + radius * Math.cos(angle);
+    const y = centerPoint.y + radius * Math.sin(angle);
     camera.setView({
-      destination: new Cesium.Cartesian3(x, y, camera.positionWC.z),
+      destination: new Cartesian3(x, y, camera.positionWC.z),
       orientation: {
-        up: Cesium.Cartesian3.UNIT_Z,
-        heading: Cesium.Math.toRadians((angle * 180) / Math.PI),
+        up: Cartesian3.UNIT_Z,
+        heading: Math.toRadians((angle * 180) / Math.PI),
         pitch: camera.pitch,
         roll: camera.roll,
       },
@@ -288,19 +288,19 @@ function stopRotation() {
   }
 }
 function setLookDistance(data) {
-  var minDistance = data.Min;
-  var maxDistance = data.Max;
-  var currentPosition = camera.positionWC;
-  var currentPositionCartographic =
-    Cesium.Cartographic.fromCartesian(currentPosition);
-  var height = Cesium.Math.clamp(
+  const minDistance = data.min;
+  const maxDistance = data.max;
+  const currentPosition = camera.positionWC;
+  const currentPositionCartographic =
+    Cartographic.fromCartesian(currentPosition);
+  const height = Math.clamp(
     currentPositionCartographic.height,
     minDistance,
     maxDistance
   );
-  var newPosition = Cesium.Cartesian3.fromDegrees(
-    Cesium.Math.toDegrees(currentPositionCartographic.longitude),
-    Cesium.Math.toDegrees(currentPositionCartographic.latitude),
+  const newPosition = Cartesian3.fromDegrees(
+    Math.toDegrees(currentPositionCartographic.longitude),
+    Math.toDegrees(currentPositionCartographic.latitude),
     height
   );
   camera.setView({
