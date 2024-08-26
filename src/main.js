@@ -80,9 +80,11 @@ viewer.screenSpaceEventHandler.setInputAction(function (event) {
 
     // 构建消息对象
     const message = {
-      action: "MeshClick",
-      MouseLocation: MouseLocation,
-      source: "cesiumMap",
+      type: "MeshClick",
+      payload: {
+        MouseLocation: MouseLocation,
+        source: "cesiumMap",
+      },
     };
 
     // 输出到控制台
@@ -224,10 +226,12 @@ function sendCameraInfo() {
     Z: direction.z,
   };
   const message = {
-    action: "info",
-    location: location,
-    source: "cesiumMap",
-    rotation: rotation,
+    type: "info",
+    payload: {
+      location: location,
+      source: "cesiumMap",
+      rotation: rotation,
+    },
   };
   console.log("将向父类发送：", JSON.stringify(message));
   window.parent.postMessage(JSON.stringify(message), "*");
