@@ -72,7 +72,7 @@ viewer.screenSpaceEventHandler.setInputAction(function (event) {
       var MouseLocation = {
           x: longitude,
           y: latitude,
-          Z: height
+          z: height
       };
 
       // 构建消息对象
