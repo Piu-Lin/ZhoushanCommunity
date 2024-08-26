@@ -69,16 +69,16 @@ viewer.screenSpaceEventHandler.setInputAction(function (event) {
       var height = cartographic.height;
 
       // 构建位置对象
-      var location = {
-          longitude: longitude,
-          latitude: latitude,
-          height: height
+      var MouseLocation = {
+          x: longitude,
+          y: latitude,
+          Z: height
       };
 
       // 构建消息对象
       var message = {
-          action: 'clickPosition',
-          location: location,
+          action: 'MeshClick',
+          MouseLocation: MouseLocation,
           source: 'cesiumMap',
       };
 
