@@ -126,11 +126,11 @@ Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   window.addEventListener('message', function(event) {
     const message = event.data;
     const origin = event.origin;
-    if (event.source !== window.parent || message.includes("cesiumMap")){
-      return
-    }
     console.log("侦测到父页面消息")
     try {
+        if (event.source !== window.parent || message.includes("cesiumMap")){
+          return
+        }
         const data = message;
         console.log('解析父页面消息为:', data);
         switch (data.action) {
