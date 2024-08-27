@@ -232,9 +232,9 @@ function sendCameraInfo() {
 
   // 将旋转角度转换为度数并存储
   const rotation = {
-      heading: Cesium.Math.toDegrees(heading), // 绕Z轴的旋转 (Heading)
-      pitch: Cesium.Math.toDegrees(pitch),     // 绕X轴的旋转 (Pitch)
-      roll: Cesium.Math.toDegrees(roll),       // 绕Y轴的旋转 (Roll)
+      X: Cesium.Math.toDegrees(heading), // 绕Z轴的旋转 (Heading)
+      Y: Cesium.Math.toDegrees(pitch),     // 绕X轴的旋转 (Pitch)
+      Z: Cesium.Math.toDegrees(roll),       // 绕Y轴的旋转 (Roll)
   };
 
   // 创建要发送的消息
@@ -259,10 +259,9 @@ function handleFlyTo(data) {
 
   const targetPosition = new Cesium.Cartesian3(location.x, location.y, location.z);
 
-  // 使用与Cesium一致的轴映射
-  const targetHeading = Cesium.Math.toRadians(rotation.heading); // 绕 Z 轴旋转 (heading)
-  const targetPitch = Cesium.Math.toRadians(rotation.pitch);   // 绕 X 轴旋转 (pitch)
-  const targetRoll = Cesium.Math.toRadians(rotation.roll);    // 绕 Y 轴旋转 (roll)
+  const targetHeading = Cesium.Math.toRadians(rotation.X); // 绕 Z 轴旋转 (heading)
+  const targetPitch = Cesium.Math.toRadians(rotation.Y);   // 绕 X 轴旋转 (pitch)
+  const targetRoll = Cesium.Math.toRadians(rotation.Z);    // 绕 Y 轴旋转 (roll)
 
   camera.flyTo({
       destination: targetPosition,
