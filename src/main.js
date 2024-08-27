@@ -9,6 +9,7 @@ import {
   Math,
   ScreenSpaceEventType,
 } from "cesium";
+import "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./style.css";
 import { sendMsg } from "./utils";
@@ -209,61 +210,71 @@ window.addEventListener("message", function (event) {
   } catch (error) {
     console.error("Failed to parse JSON:", error);
   }
-});
+})
 function sendCameraInfo() {
   const position = camera.positionWC;
 
-  // 从相机的旋转四元数中提取 Heading, Pitch, Roll
-  const headingPitchRoll = Cesium.HeadingPitchRoll.fromQuaternion(camera.rotation);
+  // 获取相机的方向向量
+  const direction = camera.direction;
+  const up = camera.up;
+
+  // 使用 direction 和 up 计算 Heading, Pitch, Roll
+  const heading = window.Math.atan2(direction.y, direction.x);
+  const pitch = window.Math.asin(direction.z);
+  const roll = window.Math.atan2(up.z, up.y);
 
   // 获取相机的位置
   const location = {
-    x: position.x,
-    y: position.y,
-    z: position.z,
+      x: position.x,
+      y: position.y,
+      z: position.z,
   };
 
   // 将旋转角度转换为度数并存储
   const rotation = {
-    heading: Cesium.Math.toDegrees(headingPitchRoll.heading), // 绕Z轴的旋转 (Heading)
-    pitch: Cesium.Math.toDegrees(headingPitchRoll.pitch),     // 绕X轴的旋转 (Pitch)
-    roll: Cesium.Math.toDegrees(headingPitchRoll.roll),       // 绕Y轴的旋转 (Roll)
+      heading: Cesium.Math.toDegrees(heading), // 绕Z轴的旋转 (Heading)
+      pitch: Cesium.Math.toDegrees(pitch),     // 绕X轴的旋转 (Pitch)
+      roll: Cesium.Math.toDegrees(roll),       // 绕Y轴的旋转 (Roll)
   };
+
   // 创建要发送的消息
   const message = {
-    type: "info",
-    payload: {
-      location: location,
-      source: "cesiumMap",
-      rotation: rotation,
-    },
+      type: "info",
+      payload: {
+          location: location,
+          source: "cesiumMap",
+          rotation: rotation,
+      },
   };
+
   // 将消息发送给父类
   console.log("将向父类发送：", JSON.stringify(message));
   window.parent.postMessage(JSON.stringify(message), "*");
 }
+
 function handleFlyTo(data) {
   const location = data.location;
   const rotation = data.rotation;
   const time = data.time;
-  
-  const targetPosition = new Cartesian3(location.x, location.y, location.z);
-  
-  // 根据常见的旋转定义，调整轴的对应关系
-  const targetHeading = Math.toRadians(rotation.Z); // 绕 Z 轴旋转 (heading)
-  const targetPitch = Math.toRadians(rotation.X);   // 绕 X 轴旋转 (pitch)
-  const targetRoll = Math.toRadians(rotation.Y);    // 绕 Y 轴旋转 (roll)
-  
+
+  const targetPosition = new Cesium.Cartesian3(location.x, location.y, location.z);
+
+  // 使用与Cesium一致的轴映射
+  const targetHeading = Cesium.Math.toRadians(rotation.heading); // 绕 Z 轴旋转 (heading)
+  const targetPitch = Cesium.Math.toRadians(rotation.pitch);   // 绕 X 轴旋转 (pitch)
+  const targetRoll = Cesium.Math.toRadians(rotation.roll);    // 绕 Y 轴旋转 (roll)
+
   camera.flyTo({
-    destination: targetPosition,
-    duration: time,
-    orientation: {
-      heading: targetHeading,
-      pitch: targetPitch,
-      roll: targetRoll,
-    },
+      destination: targetPosition,
+      duration: time,
+      orientation: {
+          heading: targetHeading,
+          pitch: targetPitch,
+          roll: targetRoll,
+      },
   });
 }
+
 
 function startRotation(data) {
   const point = data.point;
@@ -326,3 +337,7 @@ function setLookDistance(data) {
     },
   });
 }
+setTimeout(() => {
+sendCameraInfo()
+  
+}, 6000);
