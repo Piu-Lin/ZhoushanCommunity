@@ -39,54 +39,62 @@ const tilesetOptions = {
   cullWithChildrenBounds: true,
 };
 
-let highlighted = {
+// 高亮元素
+const highlighted = {
   feature: undefined,
   originalColor: new Cesium.Color(),
 };
 
-viewer.screenSpaceEventHandler.setInputAction(function (event) {
-  const pickedFeature = viewer.scene.pick(event.position);
-
-  if (highlighted.feature) {
-    highlighted.feature.setColor(highlighted.originalColor);
+viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
+  // 清除之前的高亮元素
+  if (Cesium.defined(highlighted.feature)) {
+    highlighted.feature.color = highlighted.originalColor;
     highlighted.feature = undefined;
   }
+  // 选择新要素
+  const pickedFeature = viewer.scene.pick(event.position);
+  if (!Cesium.defined(pickedFeature)) {
+    return;
+  }
+  // 存储选中要素的信息
+  highlighted.feature = pickedFeature;
+  Cesium.Color.clone(pickedFeature.color, highlighted.originalColor);
+  // 高亮选中元素
+  pickedFeature.color = Cesium.Color.RED;
+  // 获取鼠标点击位置对应的地理坐标
+  const cartesian = viewer.scene.camera.pickEllipsoid(
+    event.position,
+    viewer.scene.globe.ellipsoid
+  );
 
-  if (Cesium.defined(pickedFeature) && pickedFeature.content) {
-    highlighted.feature = pickedFeature;
-    highlighted.originalColor = pickedFeature.getColor().clone();
-    pickedFeature.setColor(Cesium.Color.YELLOW.withAlpha(0.5));
+  if (cartesian) {
+    // 转换为地理坐标（经度、纬度、高度）
+    const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+    const height = cartographic.height;
 
-    const cartesian = viewer.scene.camera.pickEllipsoid(
-      event.position,
-      viewer.scene.globe.ellipsoid
-    );
+    // 创建包含鼠标位置的消息对象
+    const MouseLocation = {
+      x: longitude,
+      y: latitude,
+      z: height,
+    };
 
-    if (cartesian) {
-      const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-      const longitude = Math.toDegrees(cartographic.longitude);
-      const latitude = Math.toDegrees(cartographic.latitude);
-      const height = cartographic.height;
+    const message = {
+      type: "meshClick",
+      payload: {
+        MouseLocation: MouseLocation,
+        source: "cesiumMap",
+      },
+    };
 
-      const MouseLocation = {
-        x: longitude,
-        y: latitude,
-        z: height,
-      };
-
-      const message = {
-        type: "meshClick",
-        payload: {
-          MouseLocation: MouseLocation,
-          source: "cesiumMap",
-        },
-      };
-
-      console.log("将向父类发送：", JSON.stringify(message));
-      window.parent.postMessage(JSON.stringify(message), "*");
-    }
+    // 向父窗口发送消息
+    console.log("将向父类发送：", JSON.stringify(message));
+    window.parent.postMessage(JSON.stringify(message), "*");
   }
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
 // 加载3d数据
 Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   .then((tileset) => {
@@ -167,7 +175,7 @@ window.addEventListener("message", function (event) {
         break;
       case "marker.createpop":
         console.log("侦测到根据GSI坐标创建气泡需求");
-        console.log("未完成");
+        createPop(payload);
         break;
       case "marker.clearByType":
         console.log("侦测到删除指定类型气泡需求");
@@ -204,6 +212,61 @@ window.addEventListener("message", function (event) {
     console.error("Failed to parse JSON:", error);
   }
 });
+
+/**
+ * 创建一个气泡效果在Cesium中，并允许配置气泡的图标、大小和偏移。
+ *
+ * @param {Object} data - 包含位置信息的对象。
+ * @param {Object} data.location - 包含x, y, z坐标的对象。
+ * @param {number} data.location.x - 经度坐标。
+ * @param {number} data.location.y - 纬度坐标。
+ * @param {number} data.location.z - 高度坐标。
+ * @param {string} [data.image='images/markers/marker2.png'] - 气泡图标的URL，默认为'images/markers/marker2.png'。
+ * @param {number} [data.width=20] - 气泡的宽度，默认为20。
+ * @param {number} [data.height=20] - 气泡的高度，默认为20。
+ * @param {number} [data.eyeOffsetZ=-100] - 气泡沿Z轴的偏移量，默认为-100。
+ * @returns {void}
+ */
+function createPop({
+  location,
+  image = "images/markers/marker2.png", // 默认图标URL
+  width = 20, // 默认宽度
+  height = 20, // 默认高度
+  eyeOffsetZ = -100, // 默认Z轴偏移量
+}) {
+  // 验证数据有效性
+  if (
+    !location ||
+    !("x" in location) ||
+    !("y" in location) ||
+    !("z" in location)
+  ) {
+    console.error("Invalid data format.");
+    return;
+  }
+
+  // 转换经纬度坐标为Cesium的笛卡尔坐标
+  const position = Cesium.Cartesian3.fromDegrees(location.x, location.y, location.z);
+
+  // 创建Entity和Billboard
+  const entity = new Cesium.Entity({
+    position: position,
+    billboard: {
+      image: image,
+      width: width,
+      height: height,
+      eyeOffset: new Cesium.Cartesian3(0.0, 0.0, eyeOffsetZ),
+      pixelOffset: new Cesium.Cartesian2(0, 0),
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+      scale: 1.0,
+    },
+  });
+
+  // 将Entity添加到viewer中
+  viewer.entities.add(entity);
+}
+
 function sendCameraInfo() {
   const position = camera.positionWC;
 
