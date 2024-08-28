@@ -175,7 +175,7 @@ window.addEventListener("message", function (event) {
         break;
       case "marker.createpop":
         console.log("侦测到根据GSI坐标创建气泡需求");
-        createPop(payload);
+        createPop(...payload);
         break;
       case "marker.clearByType":
         console.log("侦测到删除指定类型气泡需求");
