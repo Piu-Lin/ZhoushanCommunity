@@ -380,7 +380,7 @@ function setLookDistance(data) {
   const currentPosition = camera.positionWC;
   const currentPositionCartographic =
     Cesium.Cartographic.fromCartesian(currentPosition);
-  const height = Math.clamp(
+  const height = Cesium.Math.clamp(
     currentPositionCartographic.height,
     minDistance,
     maxDistance
