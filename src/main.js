@@ -8,6 +8,7 @@ import {
   Viewer,
   Math,
   ScreenSpaceEventType,
+  Color,
 } from "cesium";
 import "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
@@ -16,25 +17,19 @@ import { sendMsg } from "./utils";
 
 const viewer = new Viewer("cesiumContainer", {
   terrain: Terrain.fromWorldTerrain(),
-  animation: false, //动画小部件
-  baseLayerPicker: false, //地图图层组件
-  fullscreenButton: false, //全屏组件
-  geocoder: false, //地理编码搜索组件
-  homeButton: false, //首页组件
-  infoBox: false, //信息框
-  sceneModePicker: false, //场景模式
-  selectionIndicator: false, //选取指示器组件
-  timeline: false, //时间轴
-  navigationHelpButton: false, //帮助按钮
+  animation: false,
+  baseLayerPicker: false,
+  fullscreenButton: false,
+  geocoder: false,
+  homeButton: false,
+  infoBox: false,
+  sceneModePicker: false,
+  selectionIndicator: false,
+  timeline: false,
+  navigationHelpButton: false,
   navigationInstructionsInitiallyVisible: false,
 });
 const camera = viewer.camera;
-
-// 相机旋转所用变量以下
-let rotationInterval;
-let centerPoint;
-let rotationSpeed;
-// 相机旋转所用变量以上
 
 viewer._cesiumWidget._creditContainer.style.display = "none";
 
@@ -47,7 +42,7 @@ const tilesetUrl = "tiles/tileset.json";
 
 const tilesetOptions = {
   url: tilesetUrl,
-  maximumScreenSpaceError: 1024, // 可以根据需要调整
+  maximumScreenSpaceError: 1024,
   skipLevelOfDetail: true,
   baseScreenSpaceError: 1024,
   skipScreenSpaceErrorFactor: 16,
@@ -56,46 +51,56 @@ const tilesetOptions = {
   loadSiblings: false,
   cullWithChildrenBounds: true,
 };
+
+let highlighted = {
+  feature: undefined,
+  originalColor: new Color(),
+};
+
 viewer.screenSpaceEventHandler.setInputAction(function (event) {
-  // 使用Cesium的地形或模型拾取工具获取点击位置的地理坐标
-  const cartesian = viewer.scene.camera.pickEllipsoid(
-    event.position,
-    viewer.scene.globe.ellipsoid
-  );
+  const pickedFeature = viewer.scene.pick(event.position);
 
-  if (cartesian) {
-    // 将Cartesian坐标转换为地理坐标（经纬度）
-    const cartographic = Cartographic.fromCartesian(cartesian);
+  if (highlighted.feature) {
+    highlighted.feature.setColor(highlighted.originalColor);
+    highlighted.feature = undefined;
+  }
 
-    // 获取经度、纬度和高度
-    const longitude = Math.toDegrees(cartographic.longitude);
-    const latitude = Math.toDegrees(cartographic.latitude);
-    const height = cartographic.height;
+  if (Cesium.defined(pickedFeature) && pickedFeature.content) {
+    highlighted.feature = pickedFeature;
+    highlighted.originalColor = pickedFeature.getColor().clone();
+    pickedFeature.setColor(Color.YELLOW.withAlpha(0.5));
 
-    // 构建位置对象
-    const MouseLocation = {
-      x: longitude,
-      y: latitude,
-      z: height,
-    };
+    const cartesian = viewer.scene.camera.pickEllipsoid(
+      event.position,
+      viewer.scene.globe.ellipsoid
+    );
 
-    // 构建消息对象
-    const message = {
-      type: "meshClick",
-      payload: {
-        MouseLocation: MouseLocation,
-        source: "cesiumMap",
-      },
-    };
+    if (cartesian) {
+      const cartographic = Cartographic.fromCartesian(cartesian);
+      const longitude = Math.toDegrees(cartographic.longitude);
+      const latitude = Math.toDegrees(cartographic.latitude);
+      const height = cartographic.height;
 
-    // 输出到控制台
-    console.log("将向父类发送：", JSON.stringify(message));
+      const MouseLocation = {
+        x: longitude,
+        y: latitude,
+        z: height,
+      };
 
-    // 使用postMessage将数据发送给父窗口
-    window.parent.postMessage(JSON.stringify(message), "*");
+      const message = {
+        type: "meshClick",
+        payload: {
+          MouseLocation: MouseLocation,
+          source: "cesiumMap",
+        },
+      };
+
+      console.log("将向父类发送：", JSON.stringify(message));
+      window.parent.postMessage(JSON.stringify(message), "*");
+    }
   }
 }, ScreenSpaceEventType.LEFT_CLICK);
-// 加载3d数据
+
 Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   .then((tileset) => {
     viewer.scene.primitives.add(tileset);
@@ -103,7 +108,7 @@ Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
     const boundingSphere = tileset.boundingSphere;
     const cartographic = Cartographic.fromCartesian(boundingSphere.center);
     const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
-    const heightOffset = 75.0; // 偏移高度，根据需要调整
+    const heightOffset = 75.0;
     const position = Cartesian3.fromRadians(
       cartographic.longitude,
       cartographic.latitude,
@@ -126,7 +131,6 @@ Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   .catch((error) => {
     console.error("加载3D Tiles数据集时发生错误：", error);
   });
-
 // 接收消息分化
 window.addEventListener("message", function (event) {
   const message = event.data;
