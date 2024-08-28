@@ -175,7 +175,7 @@ window.addEventListener("message", function (event) {
         break;
       case "marker.createpop":
         console.log("侦测到根据GSI坐标创建气泡需求");
-        createPop(...payload);
+        createPop(payload);
         break;
       case "marker.clearByType":
         console.log("侦测到删除指定类型气泡需求");
@@ -219,7 +219,7 @@ window.addEventListener("message", function (event) {
  * @param {Array} dataArray - 包含多个位置信息的对象数组。
  * @returns {void}
  */
-function createPops(dataArray) {
+function createPop(dataArray) {
   dataArray.forEach((data) => {
     // 验证数据有效性
     if (!data || !data.item || !data.item.matrixPoint) {
@@ -266,126 +266,6 @@ function createPops(dataArray) {
     viewer.entities.add(entity);
   });
 }
-
-createPops([
-  {
-    id: "66c2a24b1aa3b1f3dab70bfe",
-    title: "普一建",
-    group: "space",
-    type: "onelevelspace",
-    SapacePopHadNoHoverColor: true,
-    visibleheight: 5000,
-    payload:
-      '{"type":"space","item":{"name":"普一建","townId":"25929","_id":"66c2a24b1aa3b1f3dab70bfe","screenId":"66875a9ed036d900248da966","spaceId":"66c2a0c51aa3b1f3dab70a70","__v":0,"createTime":"2024-08-19 09:39:23","status":1,"updateTime":"2024-08-19 09:39:23","hoverable":false,"clickable":false}}',
-    item: {
-      name: "普一建",
-      townId: "25929",
-      _id: "66c2a24b1aa3b1f3dab70bfe",
-      screenId: "66875a9ed036d900248da966",
-      spaceId: "66c2a0c51aa3b1f3dab70a70",
-      __v: 0,
-      createTime: "2024-08-19 09:39:23",
-      status: 1,
-      updateTime: "2024-08-19 09:39:23",
-      hoverable: false,
-      clickable: false,
-    },
-    fronsize: 14,
-    hoverable: false,
-    clickable: false,
-    hadWebClick: false,
-    popSize: 30,
-  },
-  {
-    id: "66c2a24b1aa3b1f3dab70c01",
-    title: "龙门公寓",
-    group: "space",
-    type: "onelevelspace",
-    SapacePopHadNoHoverColor: true,
-    visibleheight: 5000,
-    payload:
-      '{"type":"space","item":{"name":"龙门公寓","townId":"25930","_id":"66c2a24b1aa3b1f3dab70c01","screenId":"66875a9ed036d900248da966","spaceId":"66c2a0c51aa3b1f3dab70a72","__v":0,"createTime":"2024-08-19 09:39:23","status":1,"updateTime":"2024-08-19 09:39:23","hoverable":false,"clickable":false}}',
-    item: {
-      name: "龙门公寓",
-      townId: "25930",
-      _id: "66c2a24b1aa3b1f3dab70c01",
-      screenId: "66875a9ed036d900248da966",
-      spaceId: "66c2a0c51aa3b1f3dab70a72",
-      __v: 0,
-      createTime: "2024-08-19 09:39:23",
-      status: 1,
-      updateTime: "2024-08-19 09:39:23",
-      hoverable: false,
-      clickable: false,
-    },
-    fronsize: 14,
-    hoverable: false,
-    clickable: false,
-    hadWebClick: false,
-    popSize: 30,
-  },
-  {
-    id: "66c2a24b1aa3b1f3dab70c04",
-    title: "九洲花园",
-    group: "space",
-    type: "onelevelspace",
-    SapacePopHadNoHoverColor: true,
-    visibleheight: 5000,
-    payload:
-      '{"type":"space","item":{"name":"九洲花园","townId":"25928","_id":"66c2a24b1aa3b1f3dab70c04","screenId":"66875a9ed036d900248da966","spaceId":"66c2a0c51aa3b1f3dab70a6e","__v":0,"createTime":"2024-08-19 09:39:23","status":1,"updateTime":"2024-08-19 09:39:23","hoverable":false,"clickable":false}}',
-    item: {
-      name: "九洲花园",
-      townId: "25928",
-      _id: "66c2a24b1aa3b1f3dab70c04",
-      screenId: "66875a9ed036d900248da966",
-      spaceId: "66c2a0c51aa3b1f3dab70a6e",
-      __v: 0,
-      createTime: "2024-08-19 09:39:23",
-      status: 1,
-      updateTime: "2024-08-19 09:39:23",
-      hoverable: false,
-      clickable: false,
-    },
-    fronsize: 14,
-    hoverable: false,
-    clickable: false,
-    hadWebClick: false,
-    popSize: 30,
-  },
-  {
-    id: "66c2a24b1aa3b1f3dab70c07",
-    location:
-      '{"x":122.31167487160636,"y":29.962897275268837,"z":-1.3969838619232178e-9}',
-    title: "莲恒公寓",
-    group: "space",
-    type: "onelevelspace",
-    SapacePopHadNoHoverColor: false,
-    visibleheight: 5000,
-    payload:
-      '{"type":"space","item":{"icon":"iconmorentubiao","matrixPoint":"{\\"x\\":122.31167487160636,\\"y\\":29.962897275268837,\\"z\\":-1.3969838619232178e-9}","name":"莲恒公寓","townId":"25927","_id":"66c2a24b1aa3b1f3dab70c07","screenId":"66875a9ed036d900248da966","spaceId":"66c2a0c51aa3b1f3dab70a6c","__v":0,"createTime":"2024-08-19 09:39:23","status":1,"updateTime":"2024-08-28 14:49:18","hoverable":false,"clickable":true}}',
-    item: {
-      icon: "iconmorentubiao",
-      matrixPoint:
-        '{"x":122.31167487160636,"y":29.962897275268837,"z":-1.3969838619232178e-9}',
-      name: "莲恒公寓",
-      townId: "25927",
-      _id: "66c2a24b1aa3b1f3dab70c07",
-      screenId: "66875a9ed036d900248da966",
-      spaceId: "66c2a0c51aa3b1f3dab70a6c",
-      __v: 0,
-      createTime: "2024-08-19 09:39:23",
-      status: 1,
-      updateTime: "2024-08-28 14:49:18",
-      hoverable: false,
-      clickable: true,
-    },
-    fronsize: 14,
-    hoverable: false,
-    clickable: true,
-    hadWebClick: false,
-    popSize: 30,
-  },
-]);
 
 function sendCameraInfo() {
   const position = camera.positionWC;
