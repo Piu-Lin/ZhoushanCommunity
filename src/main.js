@@ -359,7 +359,7 @@ function startRotation(data) {
       destination: new Cesium.Cartesian3(x, y, camera.positionWC.z),
       orientation: {
         up: Cesium.Cartesian3.UNIT_Z,
-        heading: Math.toRadians((angle * 180) / Math.PI),
+        heading: Cesium.Math.toRadians((angle * 180) / Math.PI),
         pitch: camera.pitch,
         roll: camera.roll,
       },
@@ -386,8 +386,8 @@ function setLookDistance(data) {
     maxDistance
   );
   const newPosition = Cesium.Cartesian3.fromDegrees(
-    Math.toDegrees(currentPositionCartographic.longitude),
-    Math.toDegrees(currentPositionCartographic.latitude),
+    Cesium.Math.toDegrees(currentPositionCartographic.longitude),
+    Cesium.Math.toDegrees(currentPositionCartographic.latitude),
     height
   );
   camera.setView({
