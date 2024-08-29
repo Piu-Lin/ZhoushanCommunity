@@ -46,20 +46,12 @@ const highlighted = {
     originalColor: new Cesium.Color(),
 };
 
-const data = {
-    datasourceName: "xingpu_grid",
-    id: 1,
-    visible: false,
-};
-
 viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
     consolePosition(event);
 
     // 网格移除
-    removeGrid("xihe_grid");
-
-    setEntityState(data);
-
+    // removeGrid("xihe_grid");
+    // setEntityState(data);
     // 清除之前的高亮元素
     if (Cesium.defined(highlighted.feature)) {
         highlighted.feature.color = highlighted.originalColor;
@@ -290,9 +282,9 @@ function createPop(dataArray) {
 }
 
 function sendCameraInfo() {
-    // setGrid("/static/xihe_grid.geojson");
-    // // 网格加载
     // setGrid("/static/xingpu_grid.geojson");
+    // setGrid("/static/xihe_grid.geojson");
+    // 网格加载
 
     const position = camera.positionWC;
     // 获取相机的方向向量
@@ -310,14 +302,12 @@ function sendCameraInfo() {
         y: position.y,
         z: position.z,
     };
-
     // 将旋转角度转换为度数并存储
     const rotation = {
         X: Cesium.Math.toDegrees(heading), // 绕Z轴的旋转 (Heading)
         Y: Cesium.Math.toDegrees(pitch), // 绕X轴的旋转 (Pitch)
         Z: Cesium.Math.toDegrees(roll), // 绕Y轴的旋转 (Roll)
     };
-
     // 创建要发送的消息
     const message = {
         type: "info",
@@ -327,11 +317,9 @@ function sendCameraInfo() {
             rotation: rotation,
         },
     };
-
     // 将消息发送给父类
     console.log("将向父类发送：", JSON.stringify(message));
     window.parent.postMessage(JSON.stringify(message), "*");
-
 }
 
 function handleFlyTo(data) {
@@ -503,6 +491,7 @@ let archivesList = [];
  * 移除微网格
  */
 function removeGrid(wangge) {
+    console.log(wangge, "wangge");
     removeLayer(wangge);
     archivesList = [];
     viewer.entities.removeAll();
@@ -560,7 +549,7 @@ function addLabel(entity, data) {
         ID: data?.id,
         text: data?.name,
         Type: data?.Type,
-        font: data.font || "18px Microsoft YaHei",
+        font: data.font || "14px Microsoft YaHei",
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         fillColor: data.color || Cesium.Color.WHITE,
         showBackground: data?.showBackground,
@@ -595,38 +584,29 @@ function setGrid(url) {
             entity.name = name;
             entity.type = name;
             entity._id = properties?.id?._value;
-            entity.wgz_zw = properties?.wgz_zw?._value;
-            entity.wgz_phone = properties?.wgz_phone?._value;
-            entity.zz_zw = properties?.zz_zw?._value;
-            entity.zz_phone = properties?.zz_phone?._value;
-            entity.jz_zw = properties?.jz_zw?._value;
-            entity.jz_phone = properties?.jz_phone?._value;
-            entity.bl_zw = properties?.bl_zw?._value;
-            entity.bl_phone = properties?.bl_phone?._value;
-            entity.qt_zw = properties?.qt_zw?._value;
-            entity.qt_phone = properties?.qt_phone?._value;
-            entity.wgz_name = properties?.wgz_name?._value;
-            entity.zz_name = properties?.zz_name?._value;
-            entity.jz_name = properties?.jz_name?._value;
-            entity.bl_name = properties?.bl_name?._value;
             entity.qt_name = properties?.qt_name?._value;
             entity.fw = properties?.fw?._value;
             let colors = [
+                {name: '第一网格', color: "#94cc61"},
+                {name: '第二网格', color: "#e46611"},
+                {name: '第三网格', color: "#e32d18"},
+                {name: '第四网格', color: "#caace0"},
+                {name: '第五网格', color: "#f99cb9"},
+                {name: '第六网格', color: "#97e2f7"},
+                {name: '第七网格', color: "#ffc617"},
                 {name: '第八网格', color: "#00a9b2"},
-                {name: '二号网格', color: "#23c8ee"},
             ];
             entity.polygon.distanceDisplayCondition = new Cesium.DistanceDisplayCondition(0, 160000);
             addGridPolyline(entity, colors);
             addLabel(entity, {
                 name,
-                near: 10,
+                near: 100,
                 far: 16000,
                 pixelOffsetY: 10,
                 showBackground: true,
-                font: '18px Microsoft YaHei'
+                font: '12px Microsoft YaHei'
             })
         }
-        console.log("wangge", wangge);
         flyTobyType(wangge);
     });
 }
@@ -653,7 +633,6 @@ function randomColor(refName) {
     return "rgb(" + r + "," + g + "," + b + ")";
 }
 
-
 /**
  * 设置entity可见性
  * @param data
@@ -667,10 +646,7 @@ function randomColor(refName) {
 function setEntityState(data) {
     viewer.dataSources._dataSources.forEach((dataSource) => {
         if (dataSource.name === data.datasourceName) {
-            console.log(dataSource.name);
             dataSource.entities.values.forEach((entity) => {
-                console.log(entity, "entity");
-                console.log(entity._id, "entity._id");
                 if (entity._id === data.id) {
                     entity.show = data.visible;
                 }
