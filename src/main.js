@@ -46,11 +46,19 @@ const highlighted = {
     originalColor: new Cesium.Color(),
 };
 
+const data = {
+    datasourceName: "xingpu_grid",
+    id: 1,
+    visible: false,
+};
+
 viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
     consolePosition(event);
 
     // 网格移除
     removeGrid("xihe_grid");
+
+    setEntityState(data);
 
     // 清除之前的高亮元素
     if (Cesium.defined(highlighted.feature)) {
@@ -278,9 +286,7 @@ function sendCameraInfo() {
     // 网格加载
     setGrid("/static/xingpu_grid.geojson");
 
-
     const position = camera.positionWC;
-
     // 获取相机的方向向量
     const direction = camera.direction;
     const up = camera.up;
@@ -576,10 +582,11 @@ function setGrid(url) {
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i];
             const {properties} = entity;
-            const name = properties?.wg?._value;
+            const name = properties?.name?._value;
             entity.Type = 'grid';
             entity.name = name;
             entity.type = name;
+            entity._id = properties?.id?._value;
             entity.wgz_zw = properties?.wgz_zw?._value;
             entity.wgz_phone = properties?.wgz_phone?._value;
             entity.zz_zw = properties?.zz_zw?._value;
@@ -597,7 +604,7 @@ function setGrid(url) {
             entity.qt_name = properties?.qt_name?._value;
             entity.fw = properties?.fw?._value;
             let colors = [
-                {name: '一号网格', color: "#38ff01"},
+                {name: '第八网格', color: "#00a9b2"},
                 {name: '二号网格', color: "#23c8ee"},
             ];
             entity.polygon.distanceDisplayCondition = new Cesium.DistanceDisplayCondition(0, 160000);
@@ -616,7 +623,11 @@ function setGrid(url) {
     });
 }
 
-function flyToGrid(entity) {
+/**
+ * 飞到实体
+ * @param entity
+ */
+function flyToEntity(entity) {
     // 高亮显示
     const polyPositions = entity.polygon.hierarchy.getValue(Cesium.JulianDate.now()).positions;
     let polyCenter = Cesium.BoundingSphere.fromPoints(polyPositions).center;
@@ -632,6 +643,32 @@ function randomColor(refName) {
     let g = Math.floor(Math.random() * 256);
     let b = Math.floor(Math.random() * 256);
     return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+
+/**
+ * 设置entity可见性
+ * @param data
+ *  const data = {
+        datasourceName: "xingpu_grid",
+        id: 1,
+        visible: false,
+    };
+ *
+ */
+function setEntityState(data) {
+    viewer.dataSources._dataSources.forEach((dataSource) => {
+        if (dataSource.name === data.datasourceName) {
+            console.log(dataSource.name);
+            dataSource.entities.values.forEach((entity) => {
+                console.log(entity, "entity");
+                console.log(entity._id, "entity._id");
+                if (entity._id === data.id) {
+                    entity.show = data.visible;
+                }
+            });
+        }
+    });
 }
 
 setTimeout(() => {
