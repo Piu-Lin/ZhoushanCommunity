@@ -171,6 +171,14 @@ window.addEventListener("message", function (event) {
                 console.log("侦测到设置可视高度需求");
                 setLookDistance(payload);
                 break;
+            case "setGrid":
+                setGrid("/static/xingpu_grid.geojson");
+                setGrid("/static/xihe_grid.geojson");
+                break;
+            case "removeGrid":
+                removeGrid("xihe_grid");
+                removeGrid("xingpu_grid");
+                break;
             case "lookAt":
                 console.log("侦测到飞向对象需求");
                 console.log("错误,项目中未指定ID");
@@ -274,9 +282,9 @@ function createPop(dataArray) {
 }
 
 function sendCameraInfo() {
-    setGrid("/static/xihe_grid.geojson");
-    // 网格加载
-    setGrid("/static/xingpu_grid.geojson");
+    // setGrid("/static/xihe_grid.geojson");
+    // // 网格加载
+    // setGrid("/static/xingpu_grid.geojson");
 
 
     const position = camera.positionWC;
