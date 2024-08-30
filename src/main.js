@@ -186,8 +186,12 @@ window.addEventListener("message", function (event) {
             case "marker.createpopbyid":
                 console.log("侦测到根据ID创建气泡需求");
                 console.log("错误,项目中未指定ID");
+                break;  
+            case "marker.createpop":                                                                                                                                                                                                                                                                                                                                                                        
+                console.log("侦测到根据GSI坐标创建气泡需求");
+                createPop(payload);
                 break;
-            case "marker.createpop":
+            case "createpop":                                                                                                                                                                                                                                                                                                                                                                        
                 console.log("侦测到根据GSI坐标创建气泡需求");
                 createPop(payload);
                 break;
