@@ -1,6 +1,7 @@
 import * as Cesium from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
-import "./style.css";
+import "./style.css"; // import * as Cesium from 'cesium';
+import Cameras from "./enum/Cameras";
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -25,7 +26,7 @@ Cesium.Ion.defaultAccessToken =
 
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
-const tilesetUrl = "tiles/tileset.json";
+const tilesetUrl = "http://metagis.cc:20211/tiles/tileset.json";
 
 const tilesetOptions = {
   url: tilesetUrl,
@@ -46,6 +47,11 @@ const highlighted = {
 };
 
 viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
+  consolePosition(event);
+
+  // 网格移除
+  // removeGrid("xihe_grid");
+  // setEntityState(data);
   // 清除之前的高亮元素
   if (Cesium.defined(highlighted.feature)) {
     highlighted.feature.color = highlighted.originalColor;
@@ -208,8 +214,8 @@ window.addEventListener("message", function (event) {
       default:
         console.log("未知指令:", data);
     }
-  } catch (error) {
-    console.error("Failed to parse JSON:", error);
+  } catch (e) {
+    console.error(e);
   }
 });
 
@@ -222,19 +228,16 @@ window.addEventListener("message", function (event) {
 function createPop(dataArray) {
   dataArray.forEach((data) => {
     // 验证数据有效性
-    if (!data || !data.item || !data.location) {
+    if (!data || !data.item || !data.item.matrixPoint) {
       console.error("Invalid data format for entry:", data);
       return;
     }
 
     // 提取位置信息
-    const location = data.location;
+    const location = JSON.parse(data.item.matrixPoint);
 
     // 可选地从数据中提取图标URL，如果没有提供则使用默认图标
-    let image = data.item.icon || "images/markers/marker2.png";
-    if (!data.item.icon.endsWith("png") || !data.item.icon.endsWith("jpg")) {
-      image = "images/markers/marker2.png";
-    }
+    const image = data.item.icon || "images/markers/marker2.png";
 
     // 可选地从数据中提取宽度和高度，如果没有提供则使用默认值
     const width = data.popSize || 20;
@@ -271,8 +274,11 @@ function createPop(dataArray) {
 }
 
 function sendCameraInfo() {
-  const position = camera.positionWC;
+  // setGrid("/static/xingpu_grid.geojson");
+  // setGrid("/static/xihe_grid.geojson");
+  // 网格加载
 
+  const position = camera.positionWC;
   // 获取相机的方向向量
   const direction = camera.direction;
   const up = camera.up;
@@ -288,14 +294,12 @@ function sendCameraInfo() {
     y: position.y,
     z: position.z,
   };
-
   // 将旋转角度转换为度数并存储
   const rotation = {
     X: Cesium.Math.toDegrees(heading), // 绕Z轴的旋转 (Heading)
     Y: Cesium.Math.toDegrees(pitch), // 绕X轴的旋转 (Pitch)
     Z: Cesium.Math.toDegrees(roll), // 绕Y轴的旋转 (Roll)
   };
-
   // 创建要发送的消息
   const message = {
     type: "info",
@@ -305,7 +309,6 @@ function sendCameraInfo() {
       rotation: rotation,
     },
   };
-
   // 将消息发送给父类
   console.log("将向父类发送：", JSON.stringify(message));
   window.parent.postMessage(JSON.stringify(message), "*");
@@ -340,6 +343,7 @@ function handleFlyTo(data) {
 let centerPoint;
 let rotationSpeed;
 let rotationInterval;
+
 function startRotation(data) {
   const point = data.point;
   const speed = data.speed;
@@ -402,6 +406,285 @@ function setLookDistance(data) {
     },
   });
 }
+
+function flyTobyType(type) {
+  if (Cameras[type]) {
+    flyTo(Cameras[type]);
+  }
+}
+
+function flyTo(view) {
+  let position;
+  if (Array.isArray(view)) {
+    position = Cesium.Cartesian3.fromDegrees(view[0], view[1], view[2] + 400);
+  } else {
+    position = Cesium.Cartesian3.fromDegrees(
+      view.longitude || view.x,
+      view.latitude || view.y,
+      view.height || view.z + 400
+    );
+  }
+  viewer.camera.flyTo({
+    destination: position,
+    orientation: {
+      heading: view.heading || Cesium.Math.toRadians(0),
+      pitch: view.pitch || Cesium.Math.toRadians(-90),
+      roll: view.roll || Cesium.Math.toRadians(0),
+    },
+  });
+}
+
+function consolePosition(move) {
+  const longitude = Cesium.Math.toDegrees(
+    viewer.camera.positionCartographic.longitude
+  ); // 经度
+  const latitude = Cesium.Math.toDegrees(
+    viewer.camera.positionCartographic.latitude
+  ); // 纬度
+  const { height } = viewer.camera.positionCartographic; // 视角高
+  const { heading } = viewer.camera; // 方向
+  const { pitch } = viewer.camera; // 方向
+  const { roll } = viewer.camera;
+  console.log(`相机：{
+        longitude: ${longitude},
+        latitude: ${latitude},
+        height: ${height},
+        heading: ${heading},
+        pitch: ${pitch},
+        roll: ${roll},
+     }`);
+  const cartesian = pickGlobl(viewer, move.position);
+  if (!cartesian) return;
+  const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+  const clickLon = Cesium.Math.toDegrees(cartographic.longitude);
+  const clickLat = Cesium.Math.toDegrees(cartographic.latitude);
+  const clickHei = cartographic.height > 0 ? cartographic.height : 0;
+  console.log(`点位：x: ${clickLon}, y: ${clickLat}, z: ${clickHei}`);
+}
+
+function pickGlobl(viewer, windowPosition) {
+  let position;
+  const pickedObject = viewer.scene.pick(windowPosition) || {};
+  if (
+    viewer.scene.pickPositionSupported &&
+    pickedObject &&
+    pickedObject.primitive instanceof Cesium.Cesium3DTileset
+  ) {
+    position = viewer.scene.pickPosition(windowPosition);
+  } else {
+    const ray = viewer.camera.getPickRay(windowPosition);
+    position = viewer.scene.globe.pick(ray, viewer.scene);
+  }
+  return position;
+}
+
+// 移除单个图层
+function removeLayer(name) {
+  viewer.dataSources._dataSources.forEach((item) => {
+    if (item.name === name) {
+      viewer.dataSources.remove(item);
+    }
+  });
+}
+
+let archivesList = [];
+
+/**
+ * 移除微网格
+ */
+function removeGrid(wangge) {
+  console.log(wangge, "wangge");
+  removeLayer(wangge);
+  archivesList = [];
+  viewer.entities.removeAll();
+}
+
+function getHeight(data) {
+  let position = new Cesium.Cartographic.fromDegrees(
+    parseFloat(data.longitude),
+    parseFloat(data.latitude)
+  );
+  let height = viewer.scene.sampleHeight(position);
+  if (!height) {
+    Cesium.when(
+      new Cesium.sampleTerrain(viewer.terrainProvider, 15, [position]),
+      (updatedPositions) => {
+        height = updatedPositions[0].height + 5;
+      }
+    );
+  }
+  return height || 22;
+}
+
+/**
+ * 添加网格面的线
+ * @param entity
+ */
+function addGridPolyline(entity, colors) {
+  let color =
+    colors.find((item) => item.name === entity.type)?.color || randomColor();
+  entity.polygon.material =
+    Cesium.Color.fromCssColorString(color).withAlpha(0.4);
+  entity.polyline = {
+    positions: entity.polygon.hierarchy._value.positions,
+    width: 1,
+    material: Cesium.Color.fromCssColorString(color),
+    distanceDisplayCondition: entity.polygon.distanceDisplayCondition,
+    clampToGround: true,
+  };
+  let x = entity.properties.x ? entity.properties.x._value : "";
+  let y = entity.properties.y ? entity.properties.y._value : "";
+  if (x && y) {
+    entity.position = Cesium.Cartesian3.fromDegrees(
+      parseFloat(x),
+      parseFloat(y),
+      getHeight({
+        longitude: x,
+        latitude: y,
+      })
+    );
+  } else {
+    const polyPositions = entity.polygon.hierarchy.getValue(
+      Cesium.JulianDate.now()
+    ).positions;
+    let polyCenter = Cesium.BoundingSphere.fromPoints(polyPositions).center;
+    polyCenter = Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter);
+    const cartographic =
+      viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
+    let longitude = (cartographic.longitude * 180) / Math.PI;
+    let latitude = (cartographic.latitude * 180) / Math.PI;
+    entity.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 50);
+  }
+}
+
+/**
+ * 添加label
+ * @param entity
+ */
+function addLabel(entity, data) {
+  entity.label = {
+    ID: data?.id,
+    text: data?.name,
+    Type: data?.Type,
+    font: data.font || "14px Microsoft YaHei",
+    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+    fillColor: data.color || Cesium.Color.WHITE,
+    showBackground: data?.showBackground,
+    scaleByDistance: new Cesium.NearFarScalar(
+      data.far / 2 || 0,
+      1,
+      data.far || 10000,
+      0.5
+    ), // 根据高度显示对应的缩放比例大小
+    horizontalOrigin: Cesium.HorizontalOrigin.LEFT_CLICK,
+    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+    pixelOffset: new Cesium.Cartesian2(0, data.pixelOffsetY || -16),
+    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
+      data.near || 0,
+      data.far || 10000
+    ),
+    disableDepthTestDistance: 1e9,
+  };
+}
+
+/**
+ * 网格加载
+ */
+function setGrid(url) {
+  const wangge = url.replace("/static/", "").replace(".geojson", "");
+  Cesium.GeoJsonDataSource.load(url, {
+    clampToGround: true,
+  }).then((dataSource) => {
+    dataSource.name = wangge;
+    viewer.dataSources.add(dataSource);
+    const entities = dataSource.entities.values;
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i];
+      const { properties } = entity;
+      const name = properties?.name?._value;
+      entity.Type = "grid";
+      entity.name = name;
+      entity.type = name;
+      entity._id = properties?.id?._value;
+      entity.qt_name = properties?.qt_name?._value;
+      entity.fw = properties?.fw?._value;
+      let colors = [
+        { name: "第一网格", color: "#94cc61" },
+        { name: "第二网格", color: "#e46611" },
+        { name: "第三网格", color: "#e32d18" },
+        { name: "第四网格", color: "#caace0" },
+        { name: "第五网格", color: "#f99cb9" },
+        { name: "第六网格", color: "#97e2f7" },
+        { name: "第七网格", color: "#ffc617" },
+        { name: "第八网格", color: "#00a9b2" },
+      ];
+      entity.polygon.distanceDisplayCondition =
+        new Cesium.DistanceDisplayCondition(0, 160000);
+      addGridPolyline(entity, colors);
+      addLabel(entity, {
+        name,
+        near: 100,
+        far: 16000,
+        pixelOffsetY: 10,
+        showBackground: true,
+        font: "12px Microsoft YaHei",
+      });
+    }
+    flyTobyType(wangge);
+  });
+}
+
+/**
+ * 飞到实体
+ * @param entity
+ */
+function flyToEntity(entity) {
+  // 高亮显示
+  const polyPositions = entity.polygon.hierarchy.getValue(
+    Cesium.JulianDate.now()
+  ).positions;
+  let polyCenter = Cesium.BoundingSphere.fromPoints(polyPositions).center;
+  polyCenter = Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter);
+  const cartographic =
+    viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(
+      (cartographic.longitude * 180) / Math.PI,
+      (cartographic.latitude * 180) / Math.PI,
+      5000
+    ),
+  });
+}
+
+function randomColor(refName) {
+  let r = Math.floor(Math.random() * 256);
+  let g = Math.floor(Math.random() * 256);
+  let b = Math.floor(Math.random() * 256);
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+/**
+ * 设置entity可见性
+ * @param data
+ *  const data = {
+        datasourceName: "xingpu_grid",
+        id: 1,
+        visible: false,
+    };
+ *
+ */
+function setEntityState(data) {
+  viewer.dataSources._dataSources.forEach((dataSource) => {
+    if (dataSource.name === data.datasourceName) {
+      dataSource.entities.values.forEach((entity) => {
+        if (entity._id === data.id) {
+          entity.show = data.visible;
+        }
+      });
+    }
+  });
+}
+
 setTimeout(() => {
   sendCameraInfo();
 }, 6000);
