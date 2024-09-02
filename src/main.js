@@ -211,6 +211,14 @@ window.addEventListener("message", function (event) {
         console.log("侦测到清空场景需求");
         console.log("未完成");
         break;
+      case "showRegionDivision":
+        console.log("侦测到显示微网格需求");
+        console.log("未完成");
+        break;
+      case "hideRegionDivision":
+        console.log("侦测到隐藏微网格需求");
+        console.log("未完成");
+        break;
       default:
         console.log("未知指令:", data);
     }
