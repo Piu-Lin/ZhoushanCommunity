@@ -26,7 +26,7 @@ Cesium.Ion.defaultAccessToken =
 
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
-const tilesetUrl = "http://metagis.cc:20211/tiles/tileset.json";
+const tilesetUrl = "tiles/tileset.json";
 
 const tilesetOptions = {
   url: tilesetUrl,
@@ -228,13 +228,13 @@ window.addEventListener("message", function (event) {
 function createPop(dataArray) {
   dataArray.forEach((data) => {
     // 验证数据有效性
-    if (!data || !data.item || !data.item.matrixPoint) {
+    if (!data || !data.location) {
       console.error("Invalid data format for entry:", data);
       return;
     }
 
     // 提取位置信息
-    const location = JSON.parse(data.item.matrixPoint);
+    const location = data.location;
 
     // 可选地从数据中提取图标URL，如果没有提供则使用默认图标
     const image = data.item.icon || "images/markers/marker2.png";
