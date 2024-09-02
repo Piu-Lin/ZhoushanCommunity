@@ -173,7 +173,7 @@ window.addEventListener("message", function (event) {
         console.log("侦测到根据ID创建气泡需求");
         console.log("错误,项目中未指定ID");
         break;
-      case "marker.createpop":
+      case "createPop":
         console.log("侦测到根据GSI坐标创建气泡需求");
         createPop(payload);
         break;
@@ -222,16 +222,19 @@ window.addEventListener("message", function (event) {
 function createPop(dataArray) {
   dataArray.forEach((data) => {
     // 验证数据有效性
-    if (!data || !data.item || !data.item.matrixPoint) {
+    if (!data || !data.item || !data.location) {
       console.error("Invalid data format for entry:", data);
       return;
     }
 
     // 提取位置信息
-    const location = JSON.parse(data.item.matrixPoint);
+    const location = data.location;
 
     // 可选地从数据中提取图标URL，如果没有提供则使用默认图标
-    const image = data.item.icon || "images/markers/marker2.png";
+    let image = data.item.icon || "images/markers/marker2.png";
+    if (!data.item.icon.endsWith("png") || !data.item.icon.endsWith("jpg")) {
+      image = "images/markers/marker2.png";
+    }
 
     // 可选地从数据中提取宽度和高度，如果没有提供则使用默认值
     const width = data.popSize || 20;
