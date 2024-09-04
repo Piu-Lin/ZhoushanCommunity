@@ -138,7 +138,6 @@ Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
 window.addEventListener("message", function (event) {
   const message = event.data;
   const origin = event.origin;
-  console.log("侦测到父页面消息");
   try {
     if (
       event.source !== window.parent ||
@@ -146,6 +145,7 @@ window.addEventListener("message", function (event) {
     ) {
       return;
     }
+    console.log("侦测到父页面消息");
     const data = message;
     const payload = data.payload;
     console.log("解析父页面消息为:", data);
@@ -213,11 +213,11 @@ window.addEventListener("message", function (event) {
         break;
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
-        console.log("未完成");
+        setGrid()
         break;
       case "hideRegionDivision":
         console.log("侦测到隐藏微网格需求");
-        console.log("未完成");
+        removeGrid
         break;
       default:
         console.log("未知指令:", data);
@@ -233,52 +233,68 @@ window.addEventListener("message", function (event) {
  * @param {Array} dataArray - 包含多个位置信息的对象数组。
  * @returns {void}
  */
-function createPop(dataArray) {
-  dataArray.forEach((data) => {
+
+function createPop(popDatArry) {
     // 验证数据有效性
-    if (!data || !data.location) {
-      console.error("Invalid data format for entry:", data);
-      return;
+    if (!popDatArry){
+      console.log("未收到气泡数据,将全部使用默认数据");
     }
+    popDatArry.map((popData)=>{
+  
+      let poplocation = "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}";
+      if(popData.location){
+        poplocation=popData.location;
+      } else {
+        console.log("未收到气泡位置,将使用默认数据->{'x':122.31167487160636,'y':29.962897275268837,'z':-1.3969838619232178e-9}");
+      }
+      poplocation=JSON.parse(poplocation)
 
-    // 提取位置信息
-    const location = data.location;
+      let popicon = "images/markers/marker2.png"
+      if(popData.icon){
+        popicon=popData.icon
+      } else {
+        console.log("未收到气泡图标数据,将使用默认数据");
+      }
 
-    // 可选地从数据中提取图标URL，如果没有提供则使用默认图标
-    const image = data.item.icon || "images/markers/marker2.png";
+      let popWidth=30
+      let popHeight=30
+      if(popData.popSize){
+        popHeight = popData.popSize
+        popWidth = popData.popSize
+      } else {
+        console.log("未收到气泡大小数据,将使用默认数据");
+      }
 
-    // 可选地从数据中提取宽度和高度，如果没有提供则使用默认值
-    const width = data.popSize || 20;
-    const height = data.popSize || 20;
-
-    // 可选地从数据中提取Z轴偏移量，如果没有提供则使用默认值
-    const eyeOffsetZ = data.eyeOffsetZ || -100;
-
-    // 转换经纬度坐标为Cesium的笛卡尔坐标
-    const position = Cesium.Cartesian3.fromDegrees(
-      location.x,
-      location.y,
-      location.z
-    );
-
-    // 创建Entity和Billboard
-    const entity = new Cesium.Entity({
-      position: position,
-      billboard: {
-        image: image,
-        width: width,
-        height: height,
-        eyeOffset: new Cesium.Cartesian3(0.0, 0.0, eyeOffsetZ),
-        pixelOffset: new Cesium.Cartesian2(0, 0),
-        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-        scale: 1.0,
-      },
-    });
-
-    // 将Entity添加到viewer中
-    viewer.entities.add(entity);
-  });
+      // 可选地从数据中提取Z轴偏移量，如果没有提供则使用默认值
+      //const eyeOffsetZ = data.eyeOffsetZ || -100;
+      let eyeOffsetZ=-100;
+      // 转换经纬度坐标为Cesium的笛卡尔坐标
+      const poPosition = Cesium.Cartesian3.fromDegrees(
+        poplocation.x,
+        poplocation.y,
+        poplocation.z
+      );
+      if(!popData.id){
+        console.error("popID缺失")
+      }
+      const entity = new Cesium.Entity({
+        id:popData.id,
+        position: poPosition,
+        billboard: {
+          image: popicon,
+          width: popWidth,
+          height: popHeight,
+          eyeOffset: new Cesium.Cartesian3(0.0, 0.0, eyeOffsetZ),
+          pixelOffset: new Cesium.Cartesian2(0, 0),
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+          scale: 1.0,
+        },
+      });
+      // 将Entity添加到viewer中
+      viewer.entities.add(entity);
+    })
+  
 }
 
 function sendCameraInfo() {
@@ -692,7 +708,123 @@ function setEntityState(data) {
     }
   });
 }
-
+let poptest = [
+  {
+      "id": "66c2a24b1aa3b1f3dab70bfe",
+      "title": "普一建",
+      "group": "space",
+      "type": "onelevelspace",
+      "SapacePopHadNoHoverColor": true,
+      "visibleheight": 5000,
+      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"普一建\",\"townId\":\"25929\",\"_id\":\"66c2a24b1aa3b1f3dab70bfe\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a70\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
+      "item": {
+          "name": "普一建",
+          "townId": "25929",
+          "_id": "66c2a24b1aa3b1f3dab70bfe",
+          "screenId": "66875a9ed036d900248da966",
+          "spaceId": "66c2a0c51aa3b1f3dab70a70",
+          "__v": 0,
+          "createTime": "2024-08-19 09:39:23",
+          "status": 1,
+          "updateTime": "2024-08-19 09:39:23",
+          "hoverable": false,
+          "clickable": false
+      },
+      "fronsize": 14,
+      "hoverable": false,
+      "clickable": false,
+      "hadWebClick": false,
+      "popSize": 30
+  },
+  {
+      "id": "66c2a24b1aa3b1f3dab70c01",
+      "title": "龙门公寓",
+      "group": "space",
+      "type": "onelevelspace",
+      "SapacePopHadNoHoverColor": true,
+      "visibleheight": 5000,
+      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"龙门公寓\",\"townId\":\"25930\",\"_id\":\"66c2a24b1aa3b1f3dab70c01\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a72\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
+      "item": {
+          "name": "龙门公寓",
+          "townId": "25930",
+          "_id": "66c2a24b1aa3b1f3dab70c01",
+          "screenId": "66875a9ed036d900248da966",
+          "spaceId": "66c2a0c51aa3b1f3dab70a72",
+          "__v": 0,
+          "createTime": "2024-08-19 09:39:23",
+          "status": 1,
+          "updateTime": "2024-08-19 09:39:23",
+          "hoverable": false,
+          "clickable": false
+      },
+      "fronsize": 14,
+      "hoverable": false,
+      "clickable": false,
+      "hadWebClick": false,
+      "popSize": 30
+  },
+  {
+      "id": "66c2a24b1aa3b1f3dab70c04",
+      "title": "九洲花园",
+      "group": "space",
+      "type": "onelevelspace",
+      "SapacePopHadNoHoverColor": true,
+      "visibleheight": 5000,
+      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"九洲花园\",\"townId\":\"25928\",\"_id\":\"66c2a24b1aa3b1f3dab70c04\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6e\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
+      "item": {
+          "name": "九洲花园",
+          "townId": "25928",
+          "_id": "66c2a24b1aa3b1f3dab70c04",
+          "screenId": "66875a9ed036d900248da966",
+          "spaceId": "66c2a0c51aa3b1f3dab70a6e",
+          "__v": 0,
+          "createTime": "2024-08-19 09:39:23",
+          "status": 1,
+          "updateTime": "2024-08-19 09:39:23",
+          "hoverable": false,
+          "clickable": false
+      },
+      "fronsize": 14,
+      "hoverable": false,
+      "clickable": false,
+      "hadWebClick": false,
+      "popSize": 30
+  },
+  {
+      "id": "66c2a24b1aa3b1f3dab70c07",
+      "location": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
+      "title": "莲恒公寓",
+      "group": "space",
+      "type": "onelevelspace",
+      "SapacePopHadNoHoverColor": false,
+      "visibleheight": 5000,
+      "payload": "{\"type\":\"space\",\"item\":{\"icon\":\"iconmorentubiao\",\"matrixPoint\":\"{\\\"x\\\":122.31167487160636,\\\"y\\\":29.962897275268837,\\\"z\\\":-1.3969838619232178e-9}\",\"name\":\"莲恒公寓\",\"townId\":\"25927\",\"_id\":\"66c2a24b1aa3b1f3dab70c07\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6c\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-28 14:49:18\",\"hoverable\":false,\"clickable\":true}}",
+      "item": {
+          "icon": "iconmorentubiao",
+          "matrixPoint": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
+          "name": "莲恒公寓",
+          "townId": "25927",
+          "_id": "66c2a24b1aa3b1f3dab70c07",
+          "screenId": "66875a9ed036d900248da966",
+          "spaceId": "66c2a0c51aa3b1f3dab70a6c",
+          "__v": 0,
+          "createTime": "2024-08-19 09:39:23",
+          "status": 1,
+          "updateTime": "2024-08-28 14:49:18",
+          "hoverable": false,
+          "clickable": true
+      },
+      "fronsize": 14,
+      "hoverable": false,
+      "clickable": true,
+      "hadWebClick": false,
+      "popSize": 30
+  }
+]
+  // setGrid("/static/xingpu_grid.geojson");
+  // setGrid("/static/xihe_grid.geojson");
 setTimeout(() => {
   sendCameraInfo();
+  //createPop(poptest)
+  setGrid("/static/xingpu_grid.geojson")
 }, 6000);
