@@ -183,9 +183,9 @@ window.addEventListener("message", function (event) {
         console.log("侦测到根据GSI坐标创建气泡需求");
         createPop(payload);
         break;
-      case "marker.clearByType":
+      case "clearPopByType":
         console.log("侦测到删除指定类型气泡需求");
-        console.log("未完成");
+        clearPopByType(payload)
         break;
       case "marker.clearAll":
         console.log("侦测到清空所有气泡气泡需求");
@@ -213,11 +213,13 @@ window.addEventListener("message", function (event) {
         break;
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
-        setGrid()
+        setGrid("/static/xingpu_grid.geojson")
+        setGrid("/static/xihe_grid.geojson");
         break;
       case "hideRegionDivision":
         console.log("侦测到隐藏微网格需求");
-        removeGrid
+        removeGrid("xihe_grid");
+        removeGrid("xingpu_grid");
         break;
       default:
         console.log("未知指令:", data);
@@ -247,8 +249,9 @@ function createPop(popDatArry) {
       } else {
         console.log("未收到气泡位置,将使用默认数据->{'x':122.31167487160636,'y':29.962897275268837,'z':-1.3969838619232178e-9}");
       }
-      poplocation=JSON.parse(poplocation)
-
+      if(typeof(poplocation)=='string'){
+        poplocation=JSON.parse(poplocation)
+      }
       let popicon = "images/markers/marker2.png"
       if(popData.icon){
         popicon=popData.icon
@@ -280,6 +283,7 @@ function createPop(popDatArry) {
       const entity = new Cesium.Entity({
         id:popData.id,
         position: poPosition,
+        category:popData.group,
         billboard: {
           image: popicon,
           width: popWidth,
@@ -708,61 +712,18 @@ function setEntityState(data) {
     }
   });
 }
+
+function clearPopByType(data){
+  data.types.map((popType)=>{
+    viewer.entities.values.forEach(function(entity){
+      if (entity.category===popType){
+        entity.show=false 
+      }
+    })
+  })
+}
+
 let poptest = [
-  {
-      "id": "66c2a24b1aa3b1f3dab70bfe",
-      "title": "普一建",
-      "group": "space",
-      "type": "onelevelspace",
-      "SapacePopHadNoHoverColor": true,
-      "visibleheight": 5000,
-      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"普一建\",\"townId\":\"25929\",\"_id\":\"66c2a24b1aa3b1f3dab70bfe\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a70\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
-      "item": {
-          "name": "普一建",
-          "townId": "25929",
-          "_id": "66c2a24b1aa3b1f3dab70bfe",
-          "screenId": "66875a9ed036d900248da966",
-          "spaceId": "66c2a0c51aa3b1f3dab70a70",
-          "__v": 0,
-          "createTime": "2024-08-19 09:39:23",
-          "status": 1,
-          "updateTime": "2024-08-19 09:39:23",
-          "hoverable": false,
-          "clickable": false
-      },
-      "fronsize": 14,
-      "hoverable": false,
-      "clickable": false,
-      "hadWebClick": false,
-      "popSize": 30
-  },
-  {
-      "id": "66c2a24b1aa3b1f3dab70c01",
-      "title": "龙门公寓",
-      "group": "space",
-      "type": "onelevelspace",
-      "SapacePopHadNoHoverColor": true,
-      "visibleheight": 5000,
-      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"龙门公寓\",\"townId\":\"25930\",\"_id\":\"66c2a24b1aa3b1f3dab70c01\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a72\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
-      "item": {
-          "name": "龙门公寓",
-          "townId": "25930",
-          "_id": "66c2a24b1aa3b1f3dab70c01",
-          "screenId": "66875a9ed036d900248da966",
-          "spaceId": "66c2a0c51aa3b1f3dab70a72",
-          "__v": 0,
-          "createTime": "2024-08-19 09:39:23",
-          "status": 1,
-          "updateTime": "2024-08-19 09:39:23",
-          "hoverable": false,
-          "clickable": false
-      },
-      "fronsize": 14,
-      "hoverable": false,
-      "clickable": false,
-      "hadWebClick": false,
-      "popSize": 30
-  },
   {
       "id": "66c2a24b1aa3b1f3dab70c04",
       "title": "九洲花园",
@@ -821,10 +782,16 @@ let poptest = [
       "popSize": 30
   }
 ]
+
   // setGrid("/static/xingpu_grid.geojson");
   // setGrid("/static/xihe_grid.geojson");
-setTimeout(() => {
-  sendCameraInfo();
-  //createPop(poptest)
-  setGrid("/static/xingpu_grid.geojson")
-}, 6000);
+// setTimeout(() => {
+//   sendCameraInfo();
+//   createPop(poptest)
+//   // setGrid("/static/xingpu_grid.geojson")
+// }, 6000);
+// setTimeout(() => {
+//   clearPopByType({
+//     types: ['space'],
+// })
+// }, 12000);
