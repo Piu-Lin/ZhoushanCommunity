@@ -2,6 +2,9 @@ import * as Cesium from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./style.css"; // import * as Cesium from 'cesium';
 import Cameras from "./enum/Cameras";
+import PolylineTrailLinkMaterialPropertyTop from "./jsCode/PolylineTrailLinkMaterialPropertyTop";
+import {addPointToPath, play} from "./jsCode/feixng.js";
+
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -45,8 +48,15 @@ const highlighted = {
   feature: undefined,
   originalColor: new Cesium.Color(),
 };
-
+let n = 0;
 viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
+  if (n >= 3) {
+    play(viewer, "fly");
+  } else {
+    addPointToPath(viewer);
+  }
+
+  n++;
   consolePosition(event);
 
   // 网格移除
@@ -128,7 +138,7 @@ Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   })
   .then(() => {
     console.log("数据加载完成");
-    window.parent.postMessage({ type: "engineFinished" }, "*");
+    window.parent.postMessage({type: "engineFinished"}, "*");
     sendCameraInfo();
   })
   .catch((error) => {
@@ -237,68 +247,68 @@ window.addEventListener("message", function (event) {
  */
 
 function createPop(popDatArry) {
-    // 验证数据有效性
-    if (!popDatArry){
-      console.log("未收到气泡数据,将全部使用默认数据");
+  // 验证数据有效性
+  if (!popDatArry) {
+    console.log("未收到气泡数据,将全部使用默认数据");
+  }
+  popDatArry.map((popData) => {
+
+    let poplocation = "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}";
+    if (popData.location) {
+      poplocation = popData.location;
+    } else {
+      console.log("未收到气泡位置,将使用默认数据->{'x':122.31167487160636,'y':29.962897275268837,'z':-1.3969838619232178e-9}");
     }
-    popDatArry.map((popData)=>{
-  
-      let poplocation = "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}";
-      if(popData.location){
-        poplocation=popData.location;
-      } else {
-        console.log("未收到气泡位置,将使用默认数据->{'x':122.31167487160636,'y':29.962897275268837,'z':-1.3969838619232178e-9}");
-      }
-      if(typeof(poplocation)=='string'){
-        poplocation=JSON.parse(poplocation)
-      }
-      let popicon = "images/markers/marker2.png"
-      if(popData.icon){
-        popicon=popData.icon
-      } else {
-        console.log("未收到气泡图标数据,将使用默认数据");
-      }
+    if (typeof (poplocation) == 'string') {
+      poplocation = JSON.parse(poplocation)
+    }
+    let popicon = "images/markers/marker2.png"
+    if (popData.icon) {
+      popicon = popData.icon
+    } else {
+      console.log("未收到气泡图标数据,将使用默认数据");
+    }
 
-      let popWidth=30
-      let popHeight=30
-      if(popData.popSize){
-        popHeight = popData.popSize
-        popWidth = popData.popSize
-      } else {
-        console.log("未收到气泡大小数据,将使用默认数据");
-      }
+    let popWidth = 30
+    let popHeight = 30
+    if (popData.popSize) {
+      popHeight = popData.popSize
+      popWidth = popData.popSize
+    } else {
+      console.log("未收到气泡大小数据,将使用默认数据");
+    }
 
-      // 可选地从数据中提取Z轴偏移量，如果没有提供则使用默认值
-      //const eyeOffsetZ = data.eyeOffsetZ || -100;
-      let eyeOffsetZ=-100;
-      // 转换经纬度坐标为Cesium的笛卡尔坐标
-      const poPosition = Cesium.Cartesian3.fromDegrees(
-        poplocation.x,
-        poplocation.y,
-        poplocation.z
-      );
-      if(!popData.id){
-        console.error("popID缺失")
-      }
-      const entity = new Cesium.Entity({
-        id:popData.id,
-        position: poPosition,
-        category:popData.group,
-        billboard: {
-          image: popicon,
-          width: popWidth,
-          height: popHeight,
-          eyeOffset: new Cesium.Cartesian3(0.0, 0.0, eyeOffsetZ),
-          pixelOffset: new Cesium.Cartesian2(0, 0),
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-          scale: 1.0,
-        },
-      });
-      // 将Entity添加到viewer中
-      viewer.entities.add(entity);
-    })
-  
+    // 可选地从数据中提取Z轴偏移量，如果没有提供则使用默认值
+    //const eyeOffsetZ = data.eyeOffsetZ || -100;
+    let eyeOffsetZ = -100;
+    // 转换经纬度坐标为Cesium的笛卡尔坐标
+    const poPosition = Cesium.Cartesian3.fromDegrees(
+      poplocation.x,
+      poplocation.y,
+      poplocation.z
+    );
+    if (!popData.id) {
+      console.error("popID缺失")
+    }
+    const entity = new Cesium.Entity({
+      id: popData.id,
+      position: poPosition,
+      category: popData.group,
+      billboard: {
+        image: popicon,
+        width: popWidth,
+        height: popHeight,
+        eyeOffset: new Cesium.Cartesian3(0.0, 0.0, eyeOffsetZ),
+        pixelOffset: new Cesium.Cartesian2(0, 0),
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+        scale: 1.0,
+      },
+    });
+    // 将Entity添加到viewer中
+    viewer.entities.add(entity);
+  })
+
 }
 
 function sendCameraInfo() {
@@ -469,10 +479,10 @@ function consolePosition(move) {
   const latitude = Cesium.Math.toDegrees(
     viewer.camera.positionCartographic.latitude
   ); // 纬度
-  const { height } = viewer.camera.positionCartographic; // 视角高
-  const { heading } = viewer.camera; // 方向
-  const { pitch } = viewer.camera; // 方向
-  const { roll } = viewer.camera;
+  const {height} = viewer.camera.positionCartographic; // 视角高
+  const {heading} = viewer.camera; // 方向
+  const {pitch} = viewer.camera; // 方向
+  const {roll} = viewer.camera;
   console.log(`相机：{
         longitude: ${longitude},
         latitude: ${latitude},
@@ -628,7 +638,7 @@ function setGrid(url) {
     const entities = dataSource.entities.values;
     for (let i = 0; i < entities.length; i++) {
       const entity = entities[i];
-      const { properties } = entity;
+      const {properties} = entity;
       const name = properties?.name?._value;
       entity.Type = "grid";
       entity.name = name;
@@ -637,14 +647,14 @@ function setGrid(url) {
       entity.qt_name = properties?.qt_name?._value;
       entity.fw = properties?.fw?._value;
       let colors = [
-        { name: "第一网格", color: "#94cc61" },
-        { name: "第二网格", color: "#e46611" },
-        { name: "第三网格", color: "#e32d18" },
-        { name: "第四网格", color: "#caace0" },
-        { name: "第五网格", color: "#f99cb9" },
-        { name: "第六网格", color: "#97e2f7" },
-        { name: "第七网格", color: "#ffc617" },
-        { name: "第八网格", color: "#00a9b2" },
+        {name: "第一网格", color: "#94cc61"},
+        {name: "第二网格", color: "#e46611"},
+        {name: "第三网格", color: "#e32d18"},
+        {name: "第四网格", color: "#caace0"},
+        {name: "第五网格", color: "#f99cb9"},
+        {name: "第六网格", color: "#97e2f7"},
+        {name: "第七网格", color: "#ffc617"},
+        {name: "第八网格", color: "#00a9b2"},
       ];
       entity.polygon.distanceDisplayCondition =
         new Cesium.DistanceDisplayCondition(0, 160000);
@@ -695,10 +705,10 @@ function randomColor(refName) {
  * 设置entity可见性
  * @param data
  *  const data = {
-        datasourceName: "xingpu_grid",
-        id: 1,
-        visible: false,
-    };
+ datasourceName: "xingpu_grid",
+ id: 1,
+ visible: false,
+ };
  *
  */
 function setEntityState(data) {
@@ -713,85 +723,234 @@ function setEntityState(data) {
   });
 }
 
-function clearPopByType(data){
-  data.types.map((popType)=>{
-    viewer.entities.values.forEach(function(entity){
-      if (entity.category===popType){
-        entity.show=false 
+function clearPopByType(data) {
+  data.types.map((popType) => {
+    viewer.entities.values.forEach(function (entity) {
+      if (entity.category === popType) {
+        entity.show = false
       }
     })
   })
 }
 
+function createWall(Cesium, dataSource, line, color, time) {
+  const PolylineTrailLinkMaterialProperty = PolylineTrailLinkMaterialPropertyTop(Cesium);
+  dataSource.entities.add({
+    wall: {
+      positions: new Cesium.Cartesian3.fromDegreesArrayHeights(
+        line,
+      ),
+      material: new PolylineTrailLinkMaterialProperty(
+        color,
+        time
+      ),
+    },
+  });
+}
+
+// 初始化街道边界
+function initBorderLine(url, height, color, isAdd, isMask) {
+  const bianjie = url.replace("/static/", "").replace(".geojson", "") + "bianjie";
+  Cesium.GeoJsonDataSource.load(url, {
+    clampToGround: true
+  }).then((dataSource) => {
+    dataSource.name = bianjie;
+    dataSource.entities.values.forEach((entitie) => {
+      const {ellipsoid} = viewer.scene.globe;
+      const line = [];
+      entitie.polyline.positions._value.forEach((position) => {
+        const cartographic = ellipsoid.cartesianToCartographic(position);
+        line.push(Cesium.Math.toDegrees(cartographic.longitude));
+        line.push(Cesium.Math.toDegrees(cartographic.latitude));
+        line.push(height);
+      });
+      // CORNFLOWERBLUE DEEPSKYBLUE DODGERBLUE
+      createWall(Cesium, dataSource, line, Cesium.Color.fromCssColorString(color), 3000);
+      if (isMask) {
+        let polygonEntity = new Cesium.Entity({
+          polygon: {
+            hierarchy: {
+              // 添加外部区域为1/4半圆，设置为180会报错
+              // positions: Cesium.Cartesian3.fromDegreesArray([0, 0, 0, 90, 179, 90, 179, 0]),
+              positions: Cesium.Cartesian3.fromDegreesArray([70, 40, 150, 50, 131, 10, 80, 10]),
+              // 中心挖空的“洞”
+              holes: [{
+                positions: Cesium.Cartesian3.fromDegreesArrayHeights(line)
+              }]
+            },
+            material: Cesium.Color.fromCssColorString('#000000').withAlpha(0.3),
+          }
+        })
+        dataSource.entities.add(polygonEntity);
+      }
+    });
+    if (isAdd) {
+      viewer.dataSources.add(dataSource);
+      dataSource.entities.values.forEach((entitie) => {
+        // 检查 entitie 是否有 polyline 属性
+        if (entitie.polyline) {
+          entitie.polyline.width = new Cesium.ConstantProperty(20); // 使用 ConstantProperty 设置宽度
+          entitie.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+            glowPower: 0.2,
+            color: Cesium.Color.fromCssColorString("#15fcff").withAlpha(0.4),
+          });
+        }
+      });
+    }
+  });
+}
+
+function addCircleRipple(entity, height = 360, image = '/static/images/texture/colors28.png', maxR = 800) {
+  console.log(entity);
+  let r1 = 0;
+  let r2 = 0;
+
+  function changeAxis(r) {
+    r += 15;
+    if (r >= maxR) {
+      r = 0;
+    }
+    return r;
+  }
+
+  entity.ellipse = {
+    semiMinorAxis: new Cesium.CallbackProperty((() => {
+      r1 = changeAxis(r1);
+      return r1;
+    }), false),
+    semiMajorAxis: new Cesium.CallbackProperty((() => {
+      r2 = changeAxis(r2);
+      return r2;
+    }), false),
+    height: height / 3,
+    material: new Cesium.ImageMaterialProperty({
+      image: image,
+      color: new Cesium.CallbackProperty(() => {
+        let alp = 1 - r1 / maxR;
+        return Cesium.Color.WHITE.withAlpha(alp);
+      }, false)
+    })
+  };
+}
+
+function addYuJing(popDatArry) {
+  // 验证数据有效性
+  if (!popDatArry) {
+    console.log("未收到气泡数据,将全部使用默认数据");
+  }
+  popDatArry.map((popData) => {
+    let coordinate = "{\"x\":122.3173374279443,\"y\":29.972598511061538,\"z\":200}";
+    if (popData.location) {
+      coordinate = popData.location;
+    } else {
+      console.log("未收到气泡位置,将使用默认数据->{'x':122.31167487160636,'y':29.962897275268837,'z':-1.3969838619232178e-9}");
+    }
+    if (typeof (coordinate) == 'string') {
+      coordinate = JSON.parse(coordinate)
+    }
+    const dataSource = new Cesium.CustomDataSource(popData.id);
+    viewer.dataSources.add(dataSource);
+    if (!coordinate) return;
+    coordinate.z = 200;
+    let position = new Cesium.Cartesian3.fromDegrees(coordinate.x, coordinate.y, coordinate.z);
+    console.log(position, "position")
+    let heading = 0;
+
+    function getAxisValue() {
+      heading = heading + Cesium.Math.toRadians(10);
+      let hpr = new Cesium.HeadingPitchRoll(heading, 0, 0);
+      let orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+      return orientation;
+    }
+
+    let entity = dataSource.entities.add({
+      name: popData.id,
+      Type: popData.group,
+      position,
+      orientation: new Cesium.CallbackProperty(getAxisValue, false),
+      model: {
+        uri: '/static/images/model/zhui.glb',
+        scale: 0.4,
+        minimumPixelSize: 64,
+        maximumScale: 100,
+      },
+    });
+    addCircleRipple(entity, coordinate.z, '/static/images/texture/colors28.png');
+  })
+}
+
 let poptest = [
   {
-      "id": "66c2a24b1aa3b1f3dab70c04",
-      "title": "九洲花园",
-      "group": "space",
-      "type": "onelevelspace",
-      "SapacePopHadNoHoverColor": true,
-      "visibleheight": 5000,
-      "payload": "{\"type\":\"space\",\"item\":{\"name\":\"九洲花园\",\"townId\":\"25928\",\"_id\":\"66c2a24b1aa3b1f3dab70c04\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6e\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
-      "item": {
-          "name": "九洲花园",
-          "townId": "25928",
-          "_id": "66c2a24b1aa3b1f3dab70c04",
-          "screenId": "66875a9ed036d900248da966",
-          "spaceId": "66c2a0c51aa3b1f3dab70a6e",
-          "__v": 0,
-          "createTime": "2024-08-19 09:39:23",
-          "status": 1,
-          "updateTime": "2024-08-19 09:39:23",
-          "hoverable": false,
-          "clickable": false
-      },
-      "fronsize": 14,
+    "id": "66c2a24b1aa3b1f3dab70c04",
+    "title": "九洲花园",
+    "group": "space",
+    "type": "onelevelspace",
+    "SapacePopHadNoHoverColor": true,
+    "visibleheight": 5000,
+    "payload": "{\"type\":\"space\",\"item\":{\"name\":\"九洲花园\",\"townId\":\"25928\",\"_id\":\"66c2a24b1aa3b1f3dab70c04\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6e\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-19 09:39:23\",\"hoverable\":false,\"clickable\":false}}",
+    "item": {
+      "name": "九洲花园",
+      "townId": "25928",
+      "_id": "66c2a24b1aa3b1f3dab70c04",
+      "screenId": "66875a9ed036d900248da966",
+      "spaceId": "66c2a0c51aa3b1f3dab70a6e",
+      "__v": 0,
+      "createTime": "2024-08-19 09:39:23",
+      "status": 1,
+      "updateTime": "2024-08-19 09:39:23",
       "hoverable": false,
-      "clickable": false,
-      "hadWebClick": false,
-      "popSize": 30
+      "clickable": false
+    },
+    "fronsize": 14,
+    "hoverable": false,
+    "clickable": false,
+    "hadWebClick": false,
+    "popSize": 30
   },
   {
-      "id": "66c2a24b1aa3b1f3dab70c07",
-      "location": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
-      "title": "莲恒公寓",
-      "group": "space",
-      "type": "onelevelspace",
-      "SapacePopHadNoHoverColor": false,
-      "visibleheight": 5000,
-      "payload": "{\"type\":\"space\",\"item\":{\"icon\":\"iconmorentubiao\",\"matrixPoint\":\"{\\\"x\\\":122.31167487160636,\\\"y\\\":29.962897275268837,\\\"z\\\":-1.3969838619232178e-9}\",\"name\":\"莲恒公寓\",\"townId\":\"25927\",\"_id\":\"66c2a24b1aa3b1f3dab70c07\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6c\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-28 14:49:18\",\"hoverable\":false,\"clickable\":true}}",
-      "item": {
-          "icon": "iconmorentubiao",
-          "matrixPoint": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
-          "name": "莲恒公寓",
-          "townId": "25927",
-          "_id": "66c2a24b1aa3b1f3dab70c07",
-          "screenId": "66875a9ed036d900248da966",
-          "spaceId": "66c2a0c51aa3b1f3dab70a6c",
-          "__v": 0,
-          "createTime": "2024-08-19 09:39:23",
-          "status": 1,
-          "updateTime": "2024-08-28 14:49:18",
-          "hoverable": false,
-          "clickable": true
-      },
-      "fronsize": 14,
+    "id": "66c2a24b1aa3b1f3dab70c07",
+    "location": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
+    "title": "莲恒公寓",
+    "group": "space",
+    "type": "onelevelspace",
+    "SapacePopHadNoHoverColor": false,
+    "visibleheight": 5000,
+    "payload": "{\"type\":\"space\",\"item\":{\"icon\":\"iconmorentubiao\",\"matrixPoint\":\"{\\\"x\\\":122.31167487160636,\\\"y\\\":29.962897275268837,\\\"z\\\":-1.3969838619232178e-9}\",\"name\":\"莲恒公寓\",\"townId\":\"25927\",\"_id\":\"66c2a24b1aa3b1f3dab70c07\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6c\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-28 14:49:18\",\"hoverable\":false,\"clickable\":true}}",
+    "item": {
+      "icon": "iconmorentubiao",
+      "matrixPoint": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
+      "name": "莲恒公寓",
+      "townId": "25927",
+      "_id": "66c2a24b1aa3b1f3dab70c07",
+      "screenId": "66875a9ed036d900248da966",
+      "spaceId": "66c2a0c51aa3b1f3dab70a6c",
+      "__v": 0,
+      "createTime": "2024-08-19 09:39:23",
+      "status": 1,
+      "updateTime": "2024-08-28 14:49:18",
       "hoverable": false,
-      "clickable": true,
-      "hadWebClick": false,
-      "popSize": 30
+      "clickable": true
+    },
+    "fronsize": 14,
+    "hoverable": false,
+    "clickable": true,
+    "hadWebClick": false,
+    "popSize": 30
   }
 ]
+// setGrid("/static/xingpu_grid.geojson");
+// setGrid("/static/xihe_grid.geojson");
+flyTobyType('xingpu_grid');
+initBorderLine('/static/xingpu_grid_bianjie.geojson', 200, '#1064cc', true);
+addYuJing(poptest);
 
-  // setGrid("/static/xingpu_grid.geojson");
-  // setGrid("/static/xihe_grid.geojson");
-// setTimeout(() => {
-//   sendCameraInfo();
-//   createPop(poptest)
-//   // setGrid("/static/xingpu_grid.geojson")
-// }, 6000);
-// setTimeout(() => {
-//   clearPopByType({
-//     types: ['space'],
-// })
-// }, 12000);
+setTimeout(() => {
+  sendCameraInfo();
+  createPop(poptest)
+  // setGrid("/static/xingpu_grid.geojson")
+}, 6000);
+setTimeout(() => {
+  clearPopByType({
+    types: ['space'],
+  });
+}, 12000);
