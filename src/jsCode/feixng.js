@@ -3,6 +3,61 @@ import * as Cesium from "cesium";
 const tempGlobal = {};
 const FlightEntity = "FlightEntity";
 const FlightListener = "FlightListener";
+let flyDataTemp = {
+  "id": "fly",
+  "name": "路径",
+  "points": [
+    {
+      "id": "47939d114aff4cfb8951c261cdcebcb3",
+      "name": "点位",
+      "x": 122.31455755532501,
+      "y": 29.941418750495785,
+      "z": 1056.4423713864826,
+      "heading": 6.189894136481613,
+      "pitch": -0.40625423856228693,
+      "range": 1056.4423713864826,
+      "time": "0.00",
+      "visible": {
+        "pointname": false
+      }
+    },
+    {
+      "id": "819d2aa954eb4cfcb213312435e91be7",
+      "name": "点位",
+      "x": 122.32052759903523,
+      "y": 29.95468486885978,
+      "z": 1060.7078372544802,
+      "heading": 6.189894167844786,
+      "pitch": -0.40625345933859514,
+      "range": 1060.7078372544802,
+      "time": "17.55",
+      "visible": {
+        "pointname": false
+      }
+    },
+    {
+      "id": "5c010c9ff5154e00986d19412b9f6bf7",
+      "name": "点位",
+      "x": 122.32568349556165,
+      "y": 29.976390629735203,
+      "z": 1067.689407524268,
+      "heading": 6.189894219106929,
+      "pitch": -0.4062521857172534,
+      "range": 1067.689407524268,
+      "time": "27.30",
+      "visible": {
+        "pointname": false
+      }
+    }
+  ],
+  "totaltime": 0,
+  "visible": {
+    "pathname": false,
+    "list": true,
+    "play": true,
+    "save": false
+  }
+}
 let flyData = {
   id: "fly",
   name: "路径",
@@ -22,7 +77,6 @@ let stopTime = null;
 
 //向路径中添加点位
 export function addPointToPath(viewer) {
-  console.log(flyData, "flyData");
   let camera = viewer.camera;
   let cartographic = camera.positionCartographic;
   let x = Cesium.Math.toDegrees(cartographic.longitude);
@@ -62,21 +116,22 @@ export function addPointToPath(viewer) {
 
 //播放
 export function play(viewer, id) {
+  tempGlobal[FlightEntity] = flyDataTemp;
   let flightEntity = tempGlobal[FlightEntity];
   let flightListener = tempGlobal[FlightListener];
   if (Cesium.defined(flightEntity) && Cesium.defined(flightListener)) {
     //播放暂停
     if (flightEntity.id === id) {
       viewer.clock.shouldAnimate = true;
-      flyData.visible.play = false;
+      flyDataTemp.visible.play = false;
     } else {
-      flyData.visible.play = true;
+      flyDataTemp.visible.play = true;
       stop(viewer, flightEntity.id);
       play(viewer, id);
     }
   } else {
     createFlightPathPlayer(viewer, id);
-    flyData.visible.play = false;
+    flyDataTemp.visible.play = false;
   }
 }
 
@@ -84,11 +139,11 @@ export function play(viewer, id) {
 function createFlightPathPlayer(viewer) {
   let flightData = null;
   let totaltime = 0;
-  flyData.points.forEach(function (point, j) {
+  flyDataTemp.points.forEach(function (point, j) {
     totaltime += Number(point.time);
   });
-  flyData.totaltime = totaltime;
-  flightData = flyData;
+  flyDataTemp.totaltime = totaltime;
+  flightData = flyDataTemp;
   if (!flightData) {
     return;
   }
@@ -129,22 +184,20 @@ function createFlightPathPlayer(viewer) {
 }
 
 //暂停
-function pause(id) {
+export function pause(viewer, id) {
   viewer.clock.shouldAnimate = false;
-  forEachPathTodo(id, function (item, i) {
-    item.visible.play = true;
-  });
+  flyDataTemp.visible.play = true;
 }
 
 //停止
-function stop(viewer, id) {
+export function stop(viewer, id) {
   let flightEntity = tempGlobal[FlightEntity];
   let flightListener = tempGlobal[FlightListener];
   if (Cesium.defined(flightEntity)) {
     if (flightEntity.id === id) {
-      flyData.visible.play = true;
+      flyDataTemp.visible.play = true;
       if (Cesium.defined(flightListener)) {
-        removeSceneListener(flightListener);
+        removeSceneListener(viewer);
       }
       if (Cesium.defined(flightEntity)) {
         viewer.entities.remove(flightEntity);
@@ -206,9 +259,6 @@ function setSceneListener(viewer) {
         Cesium.Math.toRadians(hpr.p),
         Cesium.Math.toRadians(hpr.r)
       );
-      console.log(position, "position");
-      console.log(hpRange, "hpRange");
-      console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
       viewer.camera.lookAt(position, hpRange);
     };
   }
@@ -325,7 +375,7 @@ export const guid = function () {
 
 //遍历点位，根据id执行输入操作
 function forEachPointTodo(pointid, func) {
-  flyData.points.forEach((point, i) => {
+  flyDataTemp.points.forEach((point, i) => {
     if (point.id === pointid) {
       func(point, i);
     }
@@ -340,5 +390,5 @@ function removeSceneListener(viewer) {
 }
 
 function removeTempGlobal(name) {
-  delete tempGlobal[name];
+  tempGlobal[name] = null;
 }

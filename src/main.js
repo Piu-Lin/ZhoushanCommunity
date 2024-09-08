@@ -3,7 +3,7 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./style.css"; // import * as Cesium from 'cesium';
 import Cameras from "./enum/Cameras";
 import PolylineTrailLinkMaterialPropertyTop from "./jsCode/PolylineTrailLinkMaterialPropertyTop";
-import {addPointToPath, play} from "./jsCode/feixng.js";
+import {addPointToPath, play, stop, pause} from "./jsCode/feixng.js";
 
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
@@ -50,15 +50,7 @@ const highlighted = {
 };
 let n = 0;
 viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
-  if (n >= 3) {
-    play(viewer, "fly");
-  } else {
-    addPointToPath(viewer);
-  }
-
-  n++;
   consolePosition(event);
-
   // 网格移除
   // removeGrid("xihe_grid");
   // setEntityState(data);
@@ -595,6 +587,7 @@ function addGridPolyline(entity, colors) {
   }
 }
 
+
 /**
  * 添加label
  * @param entity
@@ -748,8 +741,12 @@ function createWall(Cesium, dataSource, line, color, time) {
   });
 }
 
-// 初始化街道边界
-function initBorderLine(url, height, color, isAdd, isMask) {
+// 添加电子围栏
+function initBorderLine(url) {
+  const height = 200
+  const color = '#1064cc'
+  const isAdd = true
+  const isMask = true
   const bianjie = url.replace("/static/", "").replace(".geojson", "") + "bianjie";
   Cesium.GeoJsonDataSource.load(url, {
     clampToGround: true
@@ -800,6 +797,12 @@ function initBorderLine(url, height, color, isAdd, isMask) {
   });
 }
 
+//删除电子围栏
+function clearBorderLine(url) {
+  const bianjie = url.replace("/static/", "").replace(".geojson", "") + "bianjie";
+  removeLayer(bianjie);
+}
+
 function addCircleRipple(entity, height = 360, image = '/static/images/texture/colors28.png', maxR = 800) {
   console.log(entity);
   let r1 = 0;
@@ -833,6 +836,7 @@ function addCircleRipple(entity, height = 360, image = '/static/images/texture/c
   };
 }
 
+//添加预警
 function addYuJing(popDatArry) {
   // 验证数据有效性
   if (!popDatArry) {
@@ -877,6 +881,28 @@ function addYuJing(popDatArry) {
     });
     addCircleRipple(entity, coordinate.z, '/static/images/texture/colors28.png');
   })
+}
+
+//删除预警
+function clearYuJing(popDatArry) {
+  popDatArry.map((popData) => {
+    removeLayer(popData.id);
+  })
+}
+
+//开始飞行
+function startFeiXing(popDatArry) {
+  play(viewer, "fly");
+}
+
+//暂停飞行
+function paseFeiXing(popDatArry) {
+  pause(viewer, "fly");
+}
+
+//停止飞行
+function stopFeiXing(popDatArry) {
+  stop(viewer, "fly")
 }
 
 let poptest = [
@@ -941,16 +967,37 @@ let poptest = [
 // setGrid("/static/xingpu_grid.geojson");
 // setGrid("/static/xihe_grid.geojson");
 flyTobyType('xingpu_grid');
-initBorderLine('/static/xingpu_grid_bianjie.geojson', 200, '#1064cc', true);
-addYuJing(poptest);
 
 setTimeout(() => {
+  // 添加网格
+  // setGrid("/static/xingpu_grid.geojson")
   sendCameraInfo();
   createPop(poptest)
-  // setGrid("/static/xingpu_grid.geojson")
+  // 电子围栏
+  initBorderLine('/static/xingpu_grid_bianjie.geojson');
+  // 预警
+  addYuJing(poptest);
+
+  // 开始飞行
+  startFeiXing();
 }, 6000);
+
 setTimeout(() => {
   clearPopByType({
     types: ['space'],
   });
+  clearBorderLine('/static/xingpu_grid_bianjie.geojson');
+  clearYuJing(poptest);
+
+  //暂停飞行
+  paseFeiXing();
 }, 12000);
+
+setTimeout(() => {
+  startFeiXing();
+}, 20000);
+
+setTimeout(() => {
+  // 停止飞行
+  stopFeiXing();
+}, 25000);
