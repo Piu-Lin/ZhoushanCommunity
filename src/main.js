@@ -5,6 +5,7 @@ import Cameras from "./enum/Cameras";
 import PolylineTrailLinkMaterialPropertyTop from "./jsCode/PolylineTrailLinkMaterialPropertyTop";
 import {addPointToPath, play, stop, pause} from "./jsCode/feixng.js";
 
+let effectIdList=[]
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -195,11 +196,32 @@ window.addEventListener("message", function (event) {
         break;
       case "reset":
         console.log("侦测到清空场景需求");
+        clearBorderLine('/static/xingpu_grid_bianjie.geojson');
         resetAll()
         break;
       case "beginFly":
         console.log("侦测到开始飞行需求");
-        resetAll()
+        startFeiXing()
+        break;
+      case "pauseFly":
+        console.log("侦测到暂停飞行需求");
+        paseFeiXing()
+        break;
+      case "resumeFly":
+        console.log("侦测到继续飞行需求");
+        startFeiXing()
+        break;
+      case "stopFly":
+        console.log("侦测到停止飞行需求");
+        stopFeiXing()
+        break;
+      case "startElefence":
+        console.log("侦测到启动电子围栏需求");
+        initBorderLine('/static/xingpu_grid_bianjie.geojson');
+        break;
+      case "clearElefence":
+        console.log("侦测到启动电子围栏需求");
+        clearBorderLine('/static/xingpu_grid_bianjie.geojson');
         break;
       case "marker.clearEffectByType":
         console.log("侦测到删除指定类型通用事件告警动效需求");
@@ -235,7 +257,11 @@ window.addEventListener("message", function (event) {
 function resetAll(){
     viewer.entities.values.forEach(function (entity) {
       entity.show = false
-  })
+    })
+    effectIdList.map((popData) => {
+      removeLayer(popData);
+    })
+
 }
 
 /**
@@ -290,9 +316,10 @@ function createPop(popDatArry) {
       console.error("popID缺失")
     }
     let enpopname="房子"
-    if (popData.popname){
-      enpopname=popData.popname
+    if (popData.popName){
+      enpopname=popData.popName
     }
+    console.log("-收到的气泡名字为-->",popData.popName)
     const entity = new Cesium.Entity({
       id: popData.id,
       position: poPosition,
@@ -301,16 +328,16 @@ function createPop(popDatArry) {
       item:popData.item,
       secondLevel: popData.secondLevel,
       label : {
-        text : enpopname,
+        text : popData.popName,
         font : '14pt Source Han Sans CN',    //字体样式
-        fillColor:Cesium.Color.BLACK,        //字体颜色
-        backgroundColor:Cesium.Color.AQUA,    //背景颜色
+        fillColor:Cesium.Color.WHITE,        //字体颜色
+        backgroundColor:Cesium.Color.BLACK,    //背景颜色
         showBackground:true,                //是否显示背景颜色
         style: Cesium.LabelStyle.FILL,        //label样式
         outlineWidth : 2,                    
         verticalOrigin : Cesium.VerticalOrigin.CENTER,//垂直位置
         horizontalOrigin :Cesium.HorizontalOrigin.LEFT,//水平位置
-        pixelOffset:new Cesium.Cartesian2(10,0)            //偏移
+        pixelOffset:new Cesium.Cartesian2(0,-100)            //偏移
     },
       billboard: {
         image: popicon,
@@ -552,7 +579,7 @@ function removeGrid(wangge) {
   console.log(wangge, "wangge");
   removeLayer(wangge);
   archivesList = [];
-  viewer.entities.removeAll();
+  // viewer.entities.removeAll();
 }
 
 function getHeight(data) {
@@ -661,7 +688,7 @@ function setGrid(url) {
       const name = properties?.name?._value;
       entity.Type = "grid";
       entity.name = name;
-      entity.type = name;
+      entity.type = "grid";
       entity._id = properties?.id?._value;
       entity.qt_name = properties?.qt_name?._value;
       entity.fw = properties?.fw?._value;
@@ -894,6 +921,7 @@ function addYuJing(popDatArry) {
     if(popData.title){
       efftitle=popData.title
     }
+    effectIdList.push(popData.id)
     let entity = dataSource.entities.add({
       name: popData.id,
       Type: popData.group,
@@ -939,15 +967,15 @@ function addYuJing(popDatArry) {
 //删除预警
 function clearYuJing(popDatArry) {
   
-  // popDatArry && popDatArry.map((popData) => {
-  //   removeLayer(popData.id);
-  // })
-  viewer.entities.values.forEach(function (entity) {
-    if (entity.isEff) {
-      console.log(entity)
-      entity.show = false
-    }
+  effectIdList.map((popData) => {
+    removeLayer(popData);
   })
+  // viewer.entities.values.forEach(function (entity) {
+  //   if (entity.isEff) {
+  //     console.log(entity)
+  //     entity.show = false
+  //   }
+  // })
 }
 
 //开始飞行
@@ -1034,9 +1062,9 @@ var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 handler.setInputAction(function(movement) {
     var pick = viewer.scene.pick(movement.position);
     if(Cesium.defined(pick)) {
-      console.log("---->",pick.id)
+      // console.log("---->",pick.id)
         let chanedc = {x:1,y:1,z:1};
-        if(position._value){
+        if(pick.id.position._value){
           chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
         }
         const message = {
@@ -1073,11 +1101,11 @@ handler.setInputAction(function(movement) {
 
 setTimeout(() => {
   // 添加网格
-  // setGrid("/static/xingpu_grid.geojson")
+  setGrid("/static/xingpu_grid.geojson")
   sendCameraInfo();
   // createPop(poptest)
   // 电子围栏
-  initBorderLine('/static/xingpu_grid_bianjie.geojson');
+  // initBorderLine('/static/xingpu_grid_bianjie.geojson');
   // 预警
   // addYuJing(poptest);
 
@@ -1087,11 +1115,11 @@ setTimeout(() => {
 
 setTimeout(() => {
   // clearPopByType({
-  //   types: ['space'],
+  //   types: ['grid'],
   // });
-  clearBorderLine('/static/xingpu_grid_bianjie.geojson');
+  // clearBorderLine('/static/xingpu_grid_bianjie.geojson');
   // clearYuJing(poptest);
-
+  // removeGrid("xingpu_grid");
   //暂停飞行
   // paseFeiXing();
 }, 12000);
