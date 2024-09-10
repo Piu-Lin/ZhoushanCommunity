@@ -177,25 +177,29 @@ window.addEventListener("message", function (event) {
         console.log("侦测到飞向对象需求");
         console.log("错误,项目中未指定ID");
         break;
-      case "marker.createpopbyid":
-        console.log("侦测到根据ID创建气泡需求");
-        console.log("错误,项目中未指定ID");
-        break;
       case "createPop":
         console.log("侦测到根据GSI坐标创建气泡需求");
         createPop(payload);
+        break;
+      case "createEffect":
+        console.log("侦测到根据GSI坐标创建动效需求");
+        addYuJing(payload);
         break;
       case "clearPopByType":
         console.log("侦测到删除指定类型气泡需求");
         clearPopByType(payload)
         break;
-      case "marker.clearAll":
-        console.log("侦测到清空所有气泡气泡需求");
-        console.log("未完成");
+      case "clearAllEffect":
+        console.log("侦测到清空所有动效需求");
+        clearYuJing(payload)
         break;
-      case "marker.addModelTerrainZ":
-        console.log("侦测到根据ID添加通用事件告警动效需求");
-        console.log("错误,项目中未指定ID");
+      case "reset":
+        console.log("侦测到清空场景需求");
+        resetAll()
+        break;
+      case "beginFly":
+        console.log("侦测到开始飞行需求");
+        resetAll()
         break;
       case "marker.clearEffectByType":
         console.log("侦测到删除指定类型通用事件告警动效需求");
@@ -209,10 +213,7 @@ window.addEventListener("message", function (event) {
         console.log("侦测到设置分辨率需求");
         console.log("未完成");
         break;
-      case "CleanScene":
-        console.log("侦测到清空场景需求");
-        console.log("未完成");
-        break;
+      
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
         setGrid("/static/xingpu_grid.geojson")
@@ -230,6 +231,12 @@ window.addEventListener("message", function (event) {
     console.error(e);
   }
 });
+
+function resetAll(){
+    viewer.entities.values.forEach(function (entity) {
+      entity.show = false
+  })
+}
 
 /**
  * 批量创建气泡效果在Cesium中，并允许配置每个气泡的图标、大小和偏移。
@@ -282,10 +289,29 @@ function createPop(popDatArry) {
     if (!popData.id) {
       console.error("popID缺失")
     }
+    let enpopname="房子"
+    if (popData.popname){
+      enpopname=popData.popname
+    }
     const entity = new Cesium.Entity({
       id: popData.id,
       position: poPosition,
       category: popData.group,
+      firstLevel:popData.firstLevel,
+      item:popData.item,
+      secondLevel: popData.secondLevel,
+      label : {
+        text : enpopname,
+        font : '14pt Source Han Sans CN',    //字体样式
+        fillColor:Cesium.Color.BLACK,        //字体颜色
+        backgroundColor:Cesium.Color.AQUA,    //背景颜色
+        showBackground:true,                //是否显示背景颜色
+        style: Cesium.LabelStyle.FILL,        //label样式
+        outlineWidth : 2,                    
+        verticalOrigin : Cesium.VerticalOrigin.CENTER,//垂直位置
+        horizontalOrigin :Cesium.HorizontalOrigin.LEFT,//水平位置
+        pixelOffset:new Cesium.Cartesian2(10,0)            //偏移
+    },
       billboard: {
         image: popicon,
         width: popWidth,
@@ -719,7 +745,7 @@ function setEntityState(data) {
 function clearPopByType(data) {
   data.types.map((popType) => {
     viewer.entities.values.forEach(function (entity) {
-      if (entity.category === popType) {
+      if (entity.firstLevel === popType) {
         entity.show = false
       }
     })
@@ -804,7 +830,6 @@ function clearBorderLine(url) {
 }
 
 function addCircleRipple(entity, height = 360, image = '/static/images/texture/colors28.png', maxR = 800) {
-  console.log(entity);
   let r1 = 0;
   let r2 = 0;
 
@@ -857,7 +882,6 @@ function addYuJing(popDatArry) {
     if (!coordinate) return;
     coordinate.z = 200;
     let position = new Cesium.Cartesian3.fromDegrees(coordinate.x, coordinate.y, coordinate.z);
-    console.log(position, "position")
     let heading = 0;
 
     function getAxisValue() {
@@ -866,11 +890,27 @@ function addYuJing(popDatArry) {
       let orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
       return orientation;
     }
-
+    let efftitle="命名出错"
+    if(popData.title){
+      efftitle=popData.title
+    }
     let entity = dataSource.entities.add({
       name: popData.id,
       Type: popData.group,
+      label : {
+        text : popData.title,
+        font : '14pt Source Han Sans CN',    //字体样式
+        fillColor:Cesium.Color.BLACK,        //字体颜色
+        backgroundColor:Cesium.Color.AQUA,    //背景颜色
+        showBackground:true,                //是否显示背景颜色
+        style: Cesium.LabelStyle.FILL,        //label样式
+        outlineWidth : 2,                    
+        verticalOrigin : Cesium.VerticalOrigin.CENTER,//垂直位置
+        horizontalOrigin :Cesium.HorizontalOrigin.LEFT,//水平位置
+        pixelOffset:new Cesium.Cartesian2(10,0)            //偏移
+    },
       position,
+      isEff:true,
       orientation: new Cesium.CallbackProperty(getAxisValue, false),
       model: {
         uri: '/static/images/model/zhui.glb',
@@ -879,14 +919,34 @@ function addYuJing(popDatArry) {
         maximumScale: 100,
       },
     });
-    addCircleRipple(entity, coordinate.z, '/static/images/texture/colors28.png');
+    let Animcolors= "EFcolorRed"
+    switch (popData.effectcolor){
+      case "red":
+        Animcolors="EFcolorRed"
+        break;
+      case "green":
+        Animcolors="EFcolorGreen"
+        break;
+      case "cyan":
+        Animcolors="EFcolorCyan"
+      default:
+        Animcolors=""
+    }
+    addCircleRipple(entity, coordinate.z, '/static/images/texture/'+Animcolors+'.png');
   })
 }
 
 //删除预警
 function clearYuJing(popDatArry) {
-  popDatArry.map((popData) => {
-    removeLayer(popData.id);
+  
+  // popDatArry && popDatArry.map((popData) => {
+  //   removeLayer(popData.id);
+  // })
+  viewer.entities.values.forEach(function (entity) {
+    if (entity.isEff) {
+      console.log(entity)
+      entity.show = false
+    }
   })
 }
 
@@ -907,7 +967,7 @@ function stopFeiXing(popDatArry) {
 
 let poptest = [
   {
-    "id": "66c2a24b1aa3b1f3dab70c04",
+    "id": "66c2a24b1aa3b1f3dab70c05",
     "title": "九洲花园",
     "group": "space",
     "type": "onelevelspace",
@@ -917,7 +977,7 @@ let poptest = [
     "item": {
       "name": "九洲花园",
       "townId": "25928",
-      "_id": "66c2a24b1aa3b1f3dab70c04",
+      "_id": "66c2a24b1aa3b1f3dab70c05",
       "screenId": "66875a9ed036d900248da966",
       "spaceId": "66c2a0c51aa3b1f3dab70a6e",
       "__v": 0,
@@ -934,20 +994,20 @@ let poptest = [
     "popSize": 30
   },
   {
-    "id": "66c2a24b1aa3b1f3dab70c07",
+    "id": "66c2a24b1aa3b1f3dab98c07",
     "location": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
     "title": "莲恒公寓",
     "group": "space",
     "type": "onelevelspace",
     "SapacePopHadNoHoverColor": false,
     "visibleheight": 5000,
-    "payload": "{\"type\":\"space\",\"item\":{\"icon\":\"iconmorentubiao\",\"matrixPoint\":\"{\\\"x\\\":122.31167487160636,\\\"y\\\":29.962897275268837,\\\"z\\\":-1.3969838619232178e-9}\",\"name\":\"莲恒公寓\",\"townId\":\"25927\",\"_id\":\"66c2a24b1aa3b1f3dab70c07\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6c\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-28 14:49:18\",\"hoverable\":false,\"clickable\":true}}",
+    "payload": "{\"type\":\"space\",\"item\":{\"icon\":\"iconmorentubiao\",\"matrixPoint\":\"{\\\"x\\\":122.31167487160636,\\\"y\\\":29.962897275268837,\\\"z\\\":-1.3969838619232178e-9}\",\"name\":\"莲恒公寓\",\"townId\":\"25927\",\"_id\":\"66c2a24b1aa3b1f3dab70c099\",\"screenId\":\"66875a9ed036d900248da966\",\"spaceId\":\"66c2a0c51aa3b1f3dab70a6c\",\"__v\":0,\"createTime\":\"2024-08-19 09:39:23\",\"status\":1,\"updateTime\":\"2024-08-28 14:49:18\",\"hoverable\":false,\"clickable\":true}}",
     "item": {
       "icon": "iconmorentubiao",
       "matrixPoint": "{\"x\":122.31167487160636,\"y\":29.962897275268837,\"z\":-1.3969838619232178e-9}",
       "name": "莲恒公寓",
       "townId": "25927",
-      "_id": "66c2a24b1aa3b1f3dab70c07",
+      "_id": "66c2a24b1aa3b1f3dab70c099",
       "screenId": "66875a9ed036d900248da966",
       "spaceId": "66c2a0c51aa3b1f3dab70a6c",
       "__v": 0,
@@ -968,36 +1028,79 @@ let poptest = [
 // setGrid("/static/xihe_grid.geojson");
 flyTobyType('xingpu_grid');
 
+// 气泡点击事件
+// popClick
+var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+handler.setInputAction(function(movement) {
+    var pick = viewer.scene.pick(movement.position);
+    if(Cesium.defined(pick)) {
+      console.log("---->",pick.id)
+        let chanedc = {x:1,y:1,z:1};
+        if(position._value){
+          chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
+        }
+        const message = {
+            type: "popClick",
+            payload: {
+              source: "cesiumMap",
+              id:pick.id.id,
+              firstLevel:pick.id.firstLevel,
+              secondLevel:pick.id.secondLevel,
+              item :{
+              },
+              senceVector2D:chanedc,
+            },
+        };
+        // 将消息发送给父类
+        console.log("将向父类发送：", JSON.stringify(message));
+        window.parent.postMessage(JSON.stringify(message), "*");
+    }
+},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+// 鼠标滑过
+// handler.setInputAction(function(movement) {
+//   var foundPosition = false;
+//   if (viewer.scene.mode !== Cesium.SceneMode.MORPHING) {
+//     var pickedObject = viewer.scene.pick(movement.endPosition);
+//     if(Cesium.defined(pickedObject)) {
+//       // if(pickedObject.id.id){
+//       //   // console.log(pickedObject.id.id,"hasbeenhover");
+//       // }
+//     }
+//   }
+// }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+
+
 setTimeout(() => {
   // 添加网格
   // setGrid("/static/xingpu_grid.geojson")
   sendCameraInfo();
-  createPop(poptest)
+  // createPop(poptest)
   // 电子围栏
   initBorderLine('/static/xingpu_grid_bianjie.geojson');
   // 预警
-  addYuJing(poptest);
+  // addYuJing(poptest);
 
   // 开始飞行
-  startFeiXing();
+  // startFeiXing();
 }, 6000);
 
 setTimeout(() => {
-  clearPopByType({
-    types: ['space'],
-  });
+  // clearPopByType({
+  //   types: ['space'],
+  // });
   clearBorderLine('/static/xingpu_grid_bianjie.geojson');
-  clearYuJing(poptest);
+  // clearYuJing(poptest);
 
   //暂停飞行
-  paseFeiXing();
+  // paseFeiXing();
 }, 12000);
 
 setTimeout(() => {
-  startFeiXing();
+  // startFeiXing();
 }, 20000);
 
 setTimeout(() => {
   // 停止飞行
-  stopFeiXing();
+  // stopFeiXing();
 }, 25000);
