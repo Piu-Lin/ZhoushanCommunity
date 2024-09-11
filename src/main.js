@@ -131,8 +131,9 @@ Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
   })
   .then(() => {
     console.log("数据加载完成");
+
     window.parent.postMessage({type: "engineFinished"}, "*");
-    sendCameraInfo();
+    // sendCameraInfo();
   })
   .catch((error) => {
     console.error("加载3D Tiles数据集时发生错误：", error);
@@ -155,7 +156,8 @@ window.addEventListener("message", function (event) {
     switch (data.type) {
       case "info":
         console.log("侦测到获取相机位置需求");
-        sendCameraInfo();
+        // sendCameraInfo();
+        getcameraPosInfo();
         break;
       case "flyTo":
         console.log("侦测到设置相机位置需求");
@@ -263,6 +265,45 @@ function resetAll(){
     })
 
 }
+
+
+// 获取相机位置，姿态等
+function getcameraPosInfo(){
+    // 获取 相机姿态信息
+    var head = viewer.scene.camera.heading 
+    var pitch = viewer.scene.camera.pitch
+    var roll  = viewer.scene.camera.roll
+    var info ={'head': head ,'pitch': pitch ,'roll': roll};
+    // 获取位置 wgs84的地心坐标系，x,y坐标值以弧度来表示
+    var position = viewer.scene.camera.positionCartographic //with longitude and latitude expressed in radians and height in meters.
+            //以下方式也可以获取相机位置只是返回的坐标系不一样
+    // var position = viewer.scene.camera.position //cartesian3 空间直角坐标系
+    // var ellipsoid = scene.globe.ellipsoid;
+    // var position =ellipsoid.cartesianToCartographic(viewer.scene.camera.position)//
+    // 弧度转经纬度
+    var longitude = Cesium.Math.toDegrees(position.longitude).toFixed(6)
+    var latitude =  Cesium.Math.toDegrees(position.latitude).toFixed(6)
+    var height = position.height
+    const message = {
+      type: "info",
+      payload: {
+        location: {
+          x:longitude,
+          y:latitude,
+          z:height
+        },
+        source: "cesiumMap",
+        rotation: {
+          X:info.pitch,
+          Y:info.roll,
+          Z:info.head
+        },
+      },
+    };
+    console.log("将向父类发送：", JSON.stringify(message));
+    window.parent.postMessage(JSON.stringify(message), "*");
+}
+
 
 /**
  * 批量创建气泡效果在Cesium中，并允许配置每个气泡的图标、大小和偏移。
@@ -402,16 +443,17 @@ function handleFlyTo(data) {
   const rotation = data.rotation;
   const time = data.time;
 
-  const targetPosition = new Cesium.Cartesian3(
-    location.x,
-    location.y,
-    location.z
+  const targetPosition = Cesium.Cartesian3.fromDegrees(
+    Number(location.x) ,
+    Number(location.y),
+    Number(location.z)
   );
-
-  const targetHeading = Cesium.Math.toRadians(rotation.X); // 绕 Z 轴旋转 (heading)
-  const targetPitch = Cesium.Math.toRadians(rotation.Y); // 绕 X 轴旋转 (pitch)
-  const targetRoll = Cesium.Math.toRadians(rotation.Z); // 绕 Y 轴旋转 (roll)
-
+  const targetHeading = Cesium.Math.toRadians(Number(rotation.Z)); // 绕 Z 轴旋转 (heading)
+  const targetPitch = Cesium.Math.toRadians(Number(rotation.X)); // 绕 X 轴旋转 (pitch)
+  const targetRoll = Cesium.Math.toRadians(Number(rotation.Y)); // 绕 Y 轴旋转 (roll)
+  // const targetHeading = rotation.Z; // 绕 Z 轴旋转 (heading)
+  // const targetPitch = rotation.X; // 绕 X 轴旋转 (pitch)
+  // const targetRoll = rotation.Y; // 绕 Y 轴旋转 (roll)
   camera.flyTo({
     destination: targetPosition,
     duration: time,
@@ -1064,7 +1106,7 @@ handler.setInputAction(function(movement) {
     if(Cesium.defined(pick)) {
       // console.log("---->",pick.id)
         let chanedc = {x:1,y:1,z:1};
-        if(pick.id.position._value){
+        if(pick.id.position && pick.id.position._value){
           chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
         }
         const message = {
@@ -1102,7 +1144,8 @@ handler.setInputAction(function(movement) {
 setTimeout(() => {
   // 添加网格
   setGrid("/static/xingpu_grid.geojson")
-  sendCameraInfo();
+  // sendCameraInfo();
+  getcameraPosInfo();
   // createPop(poptest)
   // 电子围栏
   // initBorderLine('/static/xingpu_grid_bianjie.geojson');
@@ -1122,6 +1165,7 @@ setTimeout(() => {
   // removeGrid("xingpu_grid");
   //暂停飞行
   // paseFeiXing();
+  console.log(getcameraPosInfo())
 }, 12000);
 
 setTimeout(() => {
