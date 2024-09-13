@@ -448,12 +448,12 @@ function handleFlyTo(data) {
     Number(location.y),
     Number(location.z)
   );
-  const targetHeading = Cesium.Math.toRadians(Number(rotation.Z)); // 绕 Z 轴旋转 (heading)
-  const targetPitch = Cesium.Math.toRadians(Number(rotation.X)); // 绕 X 轴旋转 (pitch)
-  const targetRoll = Cesium.Math.toRadians(Number(rotation.Y)); // 绕 Y 轴旋转 (roll)
-  // const targetHeading = rotation.Z; // 绕 Z 轴旋转 (heading)
-  // const targetPitch = rotation.X; // 绕 X 轴旋转 (pitch)
-  // const targetRoll = rotation.Y; // 绕 Y 轴旋转 (roll)
+  // const targetHeading = Cesium.Math.toRadians(Number(rotation.X)); // 绕 Z 轴旋转 (heading)
+  // const targetPitch = Cesium.Math.toRadians(Number(rotation.Y)); // 绕 X 轴旋转 (pitch)
+  // const targetRoll = Cesium.Math.toRadians(Number(rotation.Z)); // 绕 Y 轴旋转 (roll)
+  const targetHeading = rotation.Z; // 绕 Z 轴旋转 (heading)
+  const targetPitch = rotation.X; // 绕 X 轴旋转 (pitch)
+  const targetRoll = rotation.Y; // 绕 Y 轴旋转 (roll)
   camera.flyTo({
     destination: targetPosition,
     duration: time,
@@ -756,7 +756,7 @@ function setGrid(url) {
         font: "12px Microsoft YaHei",
       });
     }
-    flyTobyType(wangge);
+    // flyTobyType(wangge);
   });
 }
 
@@ -1106,8 +1106,14 @@ handler.setInputAction(function(movement) {
     if(Cesium.defined(pick)) {
       // console.log("---->",pick.id)
         let chanedc = {x:1,y:1,z:1};
-        if(pick.id.position && pick.id.position._value){
-          chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
+        if(pick){
+          if (pick.id){
+            if (pick.id.position){
+              if (pick.id.position._value){
+                chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
+              }
+            }
+          }
         }
         const message = {
             type: "popClick",
@@ -1139,11 +1145,21 @@ handler.setInputAction(function(movement) {
 //     }
 //   }
 // }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
-
+let asd= {
+  "location":{
+    "x":"122.315031",
+    "y": "29.943789",
+    "z": 1383.0833108413763
+  },
+  "rotation":{
+    "X": -0.43422240147933966,
+    "Y": 6.2831647185433015,
+    "Z": 6.244998023140704}
+}
 
 setTimeout(() => {
   // 添加网格
-  setGrid("/static/xingpu_grid.geojson")
+  // setGrid("/static/xingpu_grid.geojson")
   // sendCameraInfo();
   getcameraPosInfo();
   // createPop(poptest)
@@ -1151,7 +1167,7 @@ setTimeout(() => {
   // initBorderLine('/static/xingpu_grid_bianjie.geojson');
   // 预警
   // addYuJing(poptest);
-
+  // handleFlyTo(asd)
   // 开始飞行
   // startFeiXing();
 }, 6000);
