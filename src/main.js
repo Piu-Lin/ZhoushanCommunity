@@ -362,7 +362,7 @@ function createPop(popDatArry) {
     }
     console.log("-收到的气泡名字为-->",popData.popName)
     const entity = new Cesium.Entity({
-      id: popData.id,
+      name: popData.id,
       position: poPosition,
       category: popData.group,
       firstLevel:popData.firstLevel,
@@ -1162,7 +1162,7 @@ setTimeout(() => {
   // setGrid("/static/xingpu_grid.geojson")
   // sendCameraInfo();
   getcameraPosInfo();
-  // createPop(poptest)
+  // createPop(poptest);
   // 电子围栏
   // initBorderLine('/static/xingpu_grid_bianjie.geojson');
   // 预警
@@ -1181,6 +1181,7 @@ setTimeout(() => {
   // removeGrid("xingpu_grid");
   //暂停飞行
   // paseFeiXing();
+  // createPop(poptest);
   console.log(getcameraPosInfo())
 }, 12000);
 
