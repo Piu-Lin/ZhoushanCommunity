@@ -7,6 +7,8 @@ import {addPointToPath, play, stop, pause} from "./jsCode/feixng.js";
 
 let effectIdList=[]
 
+Cesium.Ion.defaultAccessToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhZThkYmYwZC1mOTk1LTQ4YTMtYTAxNS1iNmY3ZTRhOGFiMWMiLCJpZCI6ODkxNzYsImlhdCI6MTcyODQ0MDU5Mn0.24RpOZYq4m8TKPbpLrpuTYTBbtwOpFWJ_xlFzc-O2T8";
+
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
   animation: false, //动画小部件
@@ -24,9 +26,6 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 const camera = viewer.camera;
 
 viewer._cesiumWidget._creditContainer.style.display = "none";
-
-Cesium.Ion.defaultAccessToken =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxMjVlNTBlMy02NTI3LTQzYjktYmE4Yy04YTk3ZmY3M2RmZWUiLCJpZCI6MjI4MzY4LCJpYXQiOjE3MjQ4MzA5NTh9.nRDUt5Xp2BNYS4qhaGqI12E5qWiAAMXIx6tpOI-jXYw";
 
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
