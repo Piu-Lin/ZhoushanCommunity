@@ -617,6 +617,7 @@ let archivesList = [];
  * 移除微网格
  */
 function removeGrid(wangge) {
+  wangge = wangge.replace("/static/", "").replace(".geojson", "");
   // console.log(wangge, "wangge");
   removeLayer(wangge);
   // archivesList = [];
@@ -648,7 +649,7 @@ function addGridPolyline(entity, colors) {
   let color =
     colors.find((item) => item.name === entity.type)?.color || randomColor();
   entity.polygon.material =
-    Cesium.Color.fromCssColorString(color).withAlpha(0.4);
+    Cesium.Color.fromCssColorString(color).withAlpha(0.7);
   entity.polyline = {
     positions: entity.polygon.hierarchy._value.positions,
     width: 1,
@@ -717,7 +718,6 @@ function addLabel(entity, data) {
  */
 function setGrid(url) {
   const wangge = url.replace("/static/", "").replace(".geojson", "");
-  console.log(wangge, "wangge");
   Cesium.GeoJsonDataSource.load(url, {
     clampToGround: true,
   }).then((dataSource) => {
@@ -1096,8 +1096,8 @@ let poptest = [
   }
 ]
 // setGrid("/static/xingpu_grid.geojson");
-// setGrid("/static/xihe_grid.geojson");
-// flyTobyType('xingpu_grid');
+setGrid("/static/assinGrid.geojson");
+flyTobyType('assinGrid');
 
 // 气泡点击事件
 // popClick
@@ -1178,7 +1178,7 @@ setTimeout(() => {
   // clearPopByType({
   //   types: ['grid'],
   // });
-  
+
   // clearBorderLine('/static/xingpu_grid_bianjie.geojson');
   // clearYuJing(poptest);
   // removeGrid("xingpu_grid");
