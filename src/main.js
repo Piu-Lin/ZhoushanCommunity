@@ -197,7 +197,6 @@ window.addEventListener("message", function (event) {
         break;
       case "reset":
         console.log("侦测到清空场景需求");
-        clearBorderLine('/static/xingpu_grid_bianjie.geojson');
         resetAll()
         break;
       case "beginFly":
@@ -218,11 +217,9 @@ window.addEventListener("message", function (event) {
         break;
       case "startElefence":
         console.log("侦测到启动电子围栏需求");
-        initBorderLine('/static/xingpu_grid_bianjie.geojson');
         break;
       case "clearElefence":
         console.log("侦测到启动电子围栏需求");
-        clearBorderLine('/static/xingpu_grid_bianjie.geojson');
         break;
       case "marker.clearEffectByType":
         console.log("侦测到删除指定类型通用事件告警动效需求");
@@ -239,13 +236,9 @@ window.addEventListener("message", function (event) {
 
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
-        setGrid("/static/xingpu_grid.geojson")
-        setGrid("/static/xihe_grid.geojson");
         break;
       case "hideRegionDivision":
         console.log("侦测到隐藏微网格需求");
-        removeGrid("xihe_grid");
-        removeGrid("xingpu_grid");
         break;
       default:
         console.log("未知指令:", data);
@@ -1098,7 +1091,7 @@ let poptest = [
 // setGrid("/static/xingpu_grid.geojson");
 // setGrid("/static/xihe_grid.geojson");
 // flyTobyType('assinGrid');
-// setGrid("/static/assinGrid.geojson")
+// flyTobyType('xingpu_grid');
 
 // 气泡点击事件
 // popClick
@@ -1179,10 +1172,11 @@ setTimeout(() => {
   // clearPopByType({
   //   types: ['grid'],
   // });
+  
   // clearBorderLine('/static/xingpu_grid_bianjie.geojson');
   // clearYuJing(poptest);
   // removeGrid("xingpu_grid");
-  //暂停飞行
+  // setGrid("/static/assinGrid.geojson");
   // paseFeiXing();
   // createPop(poptest);
   console.log(getcameraPosInfo())
