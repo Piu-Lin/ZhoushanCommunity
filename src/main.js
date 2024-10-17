@@ -197,6 +197,7 @@ window.addEventListener("message", function (event) {
         break;
       case "reset":
         console.log("侦测到清空场景需求");
+        clearBorderLine('/static/assinEdge.geojson');
         resetAll()
         break;
       case "beginFly":
@@ -217,9 +218,11 @@ window.addEventListener("message", function (event) {
         break;
       case "startElefence":
         console.log("侦测到启动电子围栏需求");
+        initBorderLine('/static/assinEdge.geojson');
         break;
       case "clearElefence":
         console.log("侦测到启动电子围栏需求");
+        clearBorderLine('/static/assinEdge.geojson');
         break;
       case "marker.clearEffectByType":
         console.log("侦测到删除指定类型通用事件告警动效需求");
@@ -236,9 +239,13 @@ window.addEventListener("message", function (event) {
 
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
+        // setGrid("/static/xingpu_grid.geojson")
+        // setGrid("/static/xihe_grid.geojson");
+        setGrid("/static/assinGrid.geojson");
         break;
       case "hideRegionDivision":
         console.log("侦测到隐藏微网格需求");
+        removeGrid("/static/assinGrid.geojson");
         break;
       default:
         console.log("未知指令:", data);
@@ -1090,7 +1097,6 @@ let poptest = [
 ]
 // setGrid("/static/xingpu_grid.geojson");
 // setGrid("/static/xihe_grid.geojson");
-// flyTobyType('assinGrid');
 // flyTobyType('xingpu_grid');
 
 // 气泡点击事件
