@@ -1120,7 +1120,7 @@ handler.setInputAction(function (movement) {
       type: "popClick",
       payload: {
         source: "cesiumMap",
-        id: pick.id.id,
+        id: pick.id.name,
         firstLevel: pick.id.firstLevel,
         secondLevel: pick.id.secondLevel,
         item: {},
