@@ -1116,29 +1116,26 @@ handler.setInputAction(function (movement) {
         }
       }
     }
-    let sendsid
-    if(pick.id){
-      if(pick.id.name){
-        sendsid=pick.id.name
+    if(pick){
+      if(pick.id){
+        const message = {
+          type: "popClick",
+          payload: {
+            source: "cesiumMap",
+            id: pick.id.name,
+            firstLevel: pick.id.firstLevel,
+            secondLevel: pick.id.secondLevel,
+            item: {},
+            senceVector2D: chanedc,
+          },
+        };
+        // 将消息发送给父类
+        console.log("将向父类发送：", JSON.stringify(message));
+        window.parent.postMessage(JSON.stringify(message), "*");
       }
-    } else {
-      sendsid="iderror"
     }
-    const message = {
-      type: "popClick",
-      payload: {
-        source: "cesiumMap",
-        id: sendsid,
-        firstLevel: pick.id.firstLevel,
-        secondLevel: pick.id.secondLevel,
-        item: {},
-        senceVector2D: chanedc,
-      },
-    };
-    // 将消息发送给父类
-    console.log("将向父类发送：", JSON.stringify(message));
-    window.parent.postMessage(JSON.stringify(message), "*");
-  }
+}
+
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 // 鼠标滑过
