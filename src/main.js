@@ -3,11 +3,11 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./style.css"; // import * as Cesium from 'cesium';
 import Cameras from "./enum/Cameras";
 import PolylineTrailLinkMaterialPropertyTop from "./jsCode/PolylineTrailLinkMaterialPropertyTop";
-import {addPointToPath, play, stop, pause} from "./jsCode/feixng.js";
+import {pause, play, stop} from "./jsCode/feixng.js";
 
-let effectIdList=[]
+let effectIdList = []
 
-Cesium.Ion.defaultAccessToken ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhZThkYmYwZC1mOTk1LTQ4YTMtYTAxNS1iNmY3ZTRhOGFiMWMiLCJpZCI6ODkxNzYsImlhdCI6MTcyODQ0MDU5Mn0.24RpOZYq4m8TKPbpLrpuTYTBbtwOpFWJ_xlFzc-O2T8";
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhZThkYmYwZC1mOTk1LTQ4YTMtYTAxNS1iNmY3ZTRhOGFiMWMiLCJpZCI6ODkxNzYsImlhdCI6MTcyODQ0MDU5Mn0.24RpOZYq4m8TKPbpLrpuTYTBbtwOpFWJ_xlFzc-O2T8";
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -236,7 +236,7 @@ window.addEventListener("message", function (event) {
         console.log("侦测到设置分辨率需求");
         console.log("未完成");
         break;
-      
+
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
         setGrid("/static/xingpu_grid.geojson")
@@ -255,52 +255,52 @@ window.addEventListener("message", function (event) {
   }
 });
 
-function resetAll(){
-    viewer.entities.values.forEach(function (entity) {
-      entity.show = false
-    })
-    effectIdList.map((popData) => {
-      removeLayer(popData);
-    })
+function resetAll() {
+  viewer.entities.values.forEach(function (entity) {
+    entity.show = false
+  })
+  effectIdList.map((popData) => {
+    removeLayer(popData);
+  })
 
 }
 
 
 // 获取相机位置，姿态等
-function getcameraPosInfo(){
-    // 获取 相机姿态信息
-    var head = viewer.scene.camera.heading 
-    var pitch = viewer.scene.camera.pitch
-    var roll  = viewer.scene.camera.roll
-    var info ={'head': head ,'pitch': pitch ,'roll': roll};
-    // 获取位置 wgs84的地心坐标系，x,y坐标值以弧度来表示
-    var position = viewer.scene.camera.positionCartographic //with longitude and latitude expressed in radians and height in meters.
-            //以下方式也可以获取相机位置只是返回的坐标系不一样
-    // var position = viewer.scene.camera.position //cartesian3 空间直角坐标系
-    // var ellipsoid = scene.globe.ellipsoid;
-    // var position =ellipsoid.cartesianToCartographic(viewer.scene.camera.position)//
-    // 弧度转经纬度
-    var longitude = Cesium.Math.toDegrees(position.longitude).toFixed(6)
-    var latitude =  Cesium.Math.toDegrees(position.latitude).toFixed(6)
-    var height = position.height
-    const message = {
-      type: "info",
-      payload: {
-        location: {
-          x:longitude,
-          y:latitude,
-          z:height
-        },
-        source: "cesiumMap",
-        rotation: {
-          X:info.pitch,
-          Y:info.roll,
-          Z:info.head
-        },
+function getcameraPosInfo() {
+  // 获取 相机姿态信息
+  var head = viewer.scene.camera.heading
+  var pitch = viewer.scene.camera.pitch
+  var roll = viewer.scene.camera.roll
+  var info = {'head': head, 'pitch': pitch, 'roll': roll};
+  // 获取位置 wgs84的地心坐标系，x,y坐标值以弧度来表示
+  var position = viewer.scene.camera.positionCartographic //with longitude and latitude expressed in radians and height in meters.
+  //以下方式也可以获取相机位置只是返回的坐标系不一样
+  // var position = viewer.scene.camera.position //cartesian3 空间直角坐标系
+  // var ellipsoid = scene.globe.ellipsoid;
+  // var position =ellipsoid.cartesianToCartographic(viewer.scene.camera.position)//
+  // 弧度转经纬度
+  var longitude = Cesium.Math.toDegrees(position.longitude).toFixed(6)
+  var latitude = Cesium.Math.toDegrees(position.latitude).toFixed(6)
+  var height = position.height
+  const message = {
+    type: "info",
+    payload: {
+      location: {
+        x: longitude,
+        y: latitude,
+        z: height
       },
-    };
-    console.log("将向父类发送：", JSON.stringify(message));
-    window.parent.postMessage(JSON.stringify(message), "*");
+      source: "cesiumMap",
+      rotation: {
+        X: info.pitch,
+        Y: info.roll,
+        Z: info.head
+      },
+    },
+  };
+  console.log("将向父类发送：", JSON.stringify(message));
+  window.parent.postMessage(JSON.stringify(message), "*");
 }
 
 
@@ -355,30 +355,30 @@ function createPop(popDatArry) {
     if (!popData.id) {
       console.error("popID缺失")
     }
-    let enpopname="房子"
-    if (popData.popName){
-      enpopname=popData.popName
+    let enpopname = "房子"
+    if (popData.popName) {
+      enpopname = popData.popName
     }
-    console.log("-收到的气泡名字为-->",popData.popName)
+    console.log("-收到的气泡名字为-->", popData.popName)
     const entity = new Cesium.Entity({
       name: popData.id,
       position: poPosition,
       category: popData.group,
-      firstLevel:popData.firstLevel,
-      item:popData.item,
+      firstLevel: popData.firstLevel,
+      item: popData.item,
       secondLevel: popData.secondLevel,
-      label : {
-        text : popData.popName,
-        font : '14pt Source Han Sans CN',    //字体样式
-        fillColor:Cesium.Color.WHITE,        //字体颜色
-        backgroundColor:Cesium.Color.BLACK,    //背景颜色
-        showBackground:true,                //是否显示背景颜色
+      label: {
+        text: popData.popName,
+        font: '14pt Source Han Sans CN',    //字体样式
+        fillColor: Cesium.Color.WHITE,        //字体颜色
+        backgroundColor: Cesium.Color.BLACK,    //背景颜色
+        showBackground: true,                //是否显示背景颜色
         style: Cesium.LabelStyle.FILL,        //label样式
-        outlineWidth : 2,                    
-        verticalOrigin : Cesium.VerticalOrigin.CENTER,//垂直位置
-        horizontalOrigin :Cesium.HorizontalOrigin.LEFT,//水平位置
-        pixelOffset:new Cesium.Cartesian2(0,-100)            //偏移
-    },
+        outlineWidth: 2,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,//垂直位置
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//水平位置
+        pixelOffset: new Cesium.Cartesian2(0, -100)            //偏移
+      },
       billboard: {
         image: popicon,
         width: popWidth,
@@ -443,7 +443,7 @@ function handleFlyTo(data) {
   const time = data.time;
 
   const targetPosition = Cesium.Cartesian3.fromDegrees(
-    Number(location.x) ,
+    Number(location.x),
     Number(location.y),
     Number(location.z)
   );
@@ -717,6 +717,7 @@ function addLabel(entity, data) {
  */
 function setGrid(url) {
   const wangge = url.replace("/static/", "").replace(".geojson", "");
+  console.log(wangge, "wangge");
   Cesium.GeoJsonDataSource.load(url, {
     clampToGround: true,
   }).then((dataSource) => {
@@ -755,7 +756,7 @@ function setGrid(url) {
         font: "12px Microsoft YaHei",
       });
     }
-    // flyTobyType(wangge);
+    flyTobyType(wangge);
   });
 }
 
@@ -958,28 +959,29 @@ function addYuJing(popDatArry) {
       let orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
       return orientation;
     }
-    let efftitle="命名出错"
-    if(popData.title){
-      efftitle=popData.title
+
+    let efftitle = "命名出错"
+    if (popData.title) {
+      efftitle = popData.title
     }
     effectIdList.push(popData.id)
     let entity = dataSource.entities.add({
       name: popData.id,
       Type: popData.group,
-      label : {
-        text : popData.title,
-        font : '14pt Source Han Sans CN',    //字体样式
-        fillColor:Cesium.Color.BLACK,        //字体颜色
-        backgroundColor:Cesium.Color.AQUA,    //背景颜色
-        showBackground:true,                //是否显示背景颜色
+      label: {
+        text: popData.title,
+        font: '14pt Source Han Sans CN',    //字体样式
+        fillColor: Cesium.Color.BLACK,        //字体颜色
+        backgroundColor: Cesium.Color.AQUA,    //背景颜色
+        showBackground: true,                //是否显示背景颜色
         style: Cesium.LabelStyle.FILL,        //label样式
-        outlineWidth : 2,                    
-        verticalOrigin : Cesium.VerticalOrigin.CENTER,//垂直位置
-        horizontalOrigin :Cesium.HorizontalOrigin.LEFT,//水平位置
-        pixelOffset:new Cesium.Cartesian2(10,0)            //偏移
-    },
+        outlineWidth: 2,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,//垂直位置
+        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//水平位置
+        pixelOffset: new Cesium.Cartesian2(10, 0)            //偏移
+      },
       position,
-      isEff:true,
+      isEff: true,
       orientation: new Cesium.CallbackProperty(getAxisValue, false),
       model: {
         uri: '/static/images/model/zhui.glb',
@@ -988,26 +990,26 @@ function addYuJing(popDatArry) {
         maximumScale: 100,
       },
     });
-    let Animcolors= "EFcolorRed"
-    switch (popData.effectcolor){
+    let Animcolors = "EFcolorRed"
+    switch (popData.effectcolor) {
       case "red":
-        Animcolors="EFcolorRed"
+        Animcolors = "EFcolorRed"
         break;
       case "green":
-        Animcolors="EFcolorGreen"
+        Animcolors = "EFcolorGreen"
         break;
       case "cyan":
-        Animcolors="EFcolorCyan"
+        Animcolors = "EFcolorCyan"
       default:
-        Animcolors=""
+        Animcolors = ""
     }
-    addCircleRipple(entity, coordinate.z, '/static/images/texture/'+Animcolors+'.png');
+    addCircleRipple(entity, coordinate.z, '/static/images/texture/' + Animcolors + '.png');
   })
 }
 
 //删除预警
 function clearYuJing(popDatArry) {
-  
+
   effectIdList.map((popData) => {
     removeLayer(popData);
   })
@@ -1095,42 +1097,42 @@ let poptest = [
 ]
 // setGrid("/static/xingpu_grid.geojson");
 // setGrid("/static/xihe_grid.geojson");
-flyTobyType('xingpu_grid');
+// flyTobyType('assinGrid');
+// setGrid("/static/assinGrid.geojson")
 
 // 气泡点击事件
 // popClick
 var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-handler.setInputAction(function(movement) {
-    var pick = viewer.scene.pick(movement.position);
-    if(Cesium.defined(pick)) {
-      // console.log("---->",pick.id)
-        let chanedc = {x:1,y:1,z:1};
-        if(pick){
-          if (pick.id){
-            if (pick.id.position){
-              if (pick.id.position._value){
-                chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
-              }
-            }
+handler.setInputAction(function (movement) {
+  var pick = viewer.scene.pick(movement.position);
+  if (Cesium.defined(pick)) {
+    // console.log("---->",pick.id)
+    let chanedc = {x: 1, y: 1, z: 1};
+    if (pick) {
+      if (pick.id) {
+        if (pick.id.position) {
+          if (pick.id.position._value) {
+            chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, pick.id.position._value);
           }
         }
-        const message = {
-            type: "popClick",
-            payload: {
-              source: "cesiumMap",
-              id:pick.id.id,
-              firstLevel:pick.id.firstLevel,
-              secondLevel:pick.id.secondLevel,
-              item :{
-              },
-              senceVector2D:chanedc,
-            },
-        };
-        // 将消息发送给父类
-        console.log("将向父类发送：", JSON.stringify(message));
-        window.parent.postMessage(JSON.stringify(message), "*");
+      }
     }
-},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    const message = {
+      type: "popClick",
+      payload: {
+        source: "cesiumMap",
+        id: pick.id.id,
+        firstLevel: pick.id.firstLevel,
+        secondLevel: pick.id.secondLevel,
+        item: {},
+        senceVector2D: chanedc,
+      },
+    };
+    // 将消息发送给父类
+    console.log("将向父类发送：", JSON.stringify(message));
+    window.parent.postMessage(JSON.stringify(message), "*");
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 // 鼠标滑过
 // handler.setInputAction(function(movement) {
@@ -1144,23 +1146,25 @@ handler.setInputAction(function(movement) {
 //     }
 //   }
 // }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
-let asd= {
-  "location":{
-    "x":"122.315031",
+let asd = {
+  "location": {
+    "x": "122.315031",
     "y": "29.943789",
     "z": 1383.0833108413763
   },
-  "rotation":{
+  "rotation": {
     "X": -0.43422240147933966,
     "Y": 6.2831647185433015,
-    "Z": 6.244998023140704}
+    "Z": 6.244998023140704
+  }
 }
 
 setTimeout(() => {
   // 添加网格
   // setGrid("/static/xingpu_grid.geojson")
+  // setGrid("/static/assinEdge.geojson")
   // sendCameraInfo();
-  getcameraPosInfo();
+  // getcameraPosInfo();
   // createPop(poptest);
   // 电子围栏
   // initBorderLine('/static/xingpu_grid_bianjie.geojson');
