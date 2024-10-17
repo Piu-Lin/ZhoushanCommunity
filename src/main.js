@@ -617,9 +617,9 @@ let archivesList = [];
  * 移除微网格
  */
 function removeGrid(wangge) {
-  console.log(wangge, "wangge");
+  // console.log(wangge, "wangge");
   removeLayer(wangge);
-  archivesList = [];
+  // archivesList = [];
   // viewer.entities.removeAll();
 }
 
