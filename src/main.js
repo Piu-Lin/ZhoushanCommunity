@@ -1117,7 +1117,8 @@ handler.setInputAction(function (movement) {
       }
     }
     let sendsid
-    if(pick.id.name){
+    if(pick.id){
+      if(pick.id.name)
       sendsid=pick.id.name
     } else {
       sendsid=pick.id.id
