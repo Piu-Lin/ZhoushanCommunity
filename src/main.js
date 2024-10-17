@@ -1096,8 +1096,8 @@ let poptest = [
   }
 ]
 // setGrid("/static/xingpu_grid.geojson");
-setGrid("/static/assinGrid.geojson");
-flyTobyType('assinGrid');
+// setGrid("/static/assinGrid.geojson");
+// flyTobyType('assinGrid');
 
 // 气泡点击事件
 // popClick
