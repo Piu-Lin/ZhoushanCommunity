@@ -1116,11 +1116,17 @@ handler.setInputAction(function (movement) {
         }
       }
     }
+    let sendsid
+    if(pick.id.name){
+      sendsid=pick.id.name
+    } else {
+      sendsid=pick.id.id
+    }
     const message = {
       type: "popClick",
       payload: {
         source: "cesiumMap",
-        id: pick.id.name,
+        id: sendsid,
         firstLevel: pick.id.firstLevel,
         secondLevel: pick.id.secondLevel,
         item: {},
