@@ -4,6 +4,7 @@ import "./style.css"; // import * as Cesium from 'cesium';
 import Cameras from "./enum/Cameras";
 import PolylineTrailLinkMaterialPropertyTop from "./jsCode/PolylineTrailLinkMaterialPropertyTop";
 import {pause, play, stop} from "./jsCode/feixng.js";
+import {loadTiles} from "./jsCode/loadTiles.js";
 
 let effectIdList = []
 
@@ -27,21 +28,41 @@ const camera = viewer.camera;
 
 viewer._cesiumWidget._creditContainer.style.display = "none";
 
-viewer.scene.globe.depthTestAgainstTerrain = true;
+// viewer.scene.globe.depthTestAgainstTerrain = true;
 
-const tilesetUrl = "tiles/tileset.json";
+const tilesetUrl = "/tiles/tileset.json";
 
-const tilesetOptions = {
-  url: tilesetUrl,
-  maximumScreenSpaceError: 1024,
-  skipLevelOfDetail: true,
-  baseScreenSpaceError: 1024,
-  skipScreenSpaceErrorFactor: 16,
-  skipLevels: 1,
-  immediatelyLoadDesiredLevelOfDetail: false,
-  loadSiblings: false,
-  cullWithChildrenBounds: true,
-};
+const tilesetUrl21 = "/tiles2/tiles1/tileset.json";
+const tilesetUrl22 = "/tiles2/tiles2/tileset.json";
+const tilesetUrl23 = "/tiles2/tiles3/tileset.json";
+const tilesetUrl24 = "/tiles2/tiles4/tileset.json";
+
+const tilesetUrl31 = "/tiles3/tiles1/tileset.json";
+
+const tilesetUrl41 = "/tiles4/tiles1/tileset.json";
+const tilesetUrl42 = "/tiles4/tiles2/tileset.json";
+const tilesetUrl43 = "/tiles4/tiles3/tileset.json";
+
+const tilesetUrl51 = "/tiles5/tiles1/tileset.json";
+
+const tilesetUrl61 = "/tiles6/tiles1/tileset.json";
+
+loadTiles(viewer, tilesetUrl);
+
+loadTiles(viewer, tilesetUrl31);
+
+loadTiles(viewer, tilesetUrl41);
+loadTiles(viewer, tilesetUrl42);
+loadTiles(viewer, tilesetUrl43);
+
+loadTiles(viewer, tilesetUrl51);
+
+loadTiles(viewer, tilesetUrl61);
+
+loadTiles(viewer, tilesetUrl21);
+loadTiles(viewer, tilesetUrl22);
+loadTiles(viewer, tilesetUrl23);
+loadTiles(viewer, tilesetUrl24);
 
 // 高亮元素
 const highlighted = {
@@ -104,39 +125,40 @@ viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 // 加载3d数据
-Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
-  .then((tileset) => {
-    viewer.scene.primitives.add(tileset);
+// Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
+//   .then((tileset) => {
+//     viewer.scene.primitives.add(tileset);
+//
+//     const boundingSphere = tileset.boundingSphere;
+//     const cartographic = Cesium.Cartographic.fromCartesian(
+//       boundingSphere.center
+//     );
+//     const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
+//     const heightOffset = 75.0; // 偏移高度，根据需要调整
+//     const position = Cesium.Cartesian3.fromRadians(
+//       cartographic.longitude,
+//       cartographic.latitude,
+//       surfaceHeight + heightOffset || heightOffset
+//     );
+//     const translation = Cesium.Cartesian3.subtract(
+//       position,
+//       boundingSphere.center,
+//       new Cesium.Cartesian3()
+//     );
+//     tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+//
+//     viewer.zoomTo(tileset);
+//   })
+//   .then(() => {
+//     console.log("数据加载完成1");
+//     window.parent.postMessage({type: "engineFinished"}, "*");
+//     // sendCameraInfo();
+//   })
+//   .catch((error) => {
+//     console.error("加载3D Tiles数据集时发生错误：", error);
+//   });
 
-    const boundingSphere = tileset.boundingSphere;
-    const cartographic = Cesium.Cartographic.fromCartesian(
-      boundingSphere.center
-    );
-    const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
-    const heightOffset = 75.0; // 偏移高度，根据需要调整
-    const position = Cesium.Cartesian3.fromRadians(
-      cartographic.longitude,
-      cartographic.latitude,
-      surfaceHeight + heightOffset || heightOffset
-    );
-    const translation = Cesium.Cartesian3.subtract(
-      position,
-      boundingSphere.center,
-      new Cesium.Cartesian3()
-    );
-    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
-    viewer.zoomTo(tileset);
-  })
-  .then(() => {
-    console.log("数据加载完成");
-
-    window.parent.postMessage({type: "engineFinished"}, "*");
-    // sendCameraInfo();
-  })
-  .catch((error) => {
-    console.error("加载3D Tiles数据集时发生错误：", error);
-  });
 // 接收消息分化
 window.addEventListener("message", function (event) {
   const message = event.data;
@@ -1116,8 +1138,8 @@ handler.setInputAction(function (movement) {
         }
       }
     }
-    if(pick){
-      if(pick.id){
+    if (pick) {
+      if (pick.id) {
         const message = {
           type: "popClick",
           payload: {
@@ -1134,7 +1156,7 @@ handler.setInputAction(function (movement) {
         window.parent.postMessage(JSON.stringify(message), "*");
       }
     }
-}
+  }
 
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
