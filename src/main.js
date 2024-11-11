@@ -7,7 +7,7 @@ import {pause, play, stop} from "./jsCode/feixng.js";
 
 let effectIdList = []
 
-Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhZThkYmYwZC1mOTk1LTQ4YTMtYTAxNS1iNmY3ZTRhOGFiMWMiLCJpZCI6ODkxNzYsImlhdCI6MTcyODQ0MDU5Mn0.24RpOZYq4m8TKPbpLrpuTYTBbtwOpFWJ_xlFzc-O2T8";
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZTlkNzYzZS1jMGNmLTRlYmQtYTAzNi0wMGJhOGJmN2E0NTkiLCJpZCI6ODkxNzYsImlhdCI6MTcyOTIzNzMyN30.7GwC6y8Gp0v2LU5v668JMyZFmYhNpjgb0ry-K72YV4o";
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
   terrain: Cesium.Terrain.fromWorldTerrain(),
@@ -377,7 +377,7 @@ function createPop(popDatArry) {
         outlineWidth: 2,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,//垂直位置
         horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//水平位置
-        pixelOffset: new Cesium.Cartesian2(0, -100)            //偏移
+        pixelOffset: new Cesium.Cartesian2(0, -10)            //偏移
       },
       billboard: {
         image: popicon,
@@ -1176,7 +1176,7 @@ setTimeout(() => {
   // addYuJing(poptest);
   // handleFlyTo(asd)
   // 开始飞行
-  // startFeiXing();
+  // startFeiXingffcc();
 }, 6000);
 
 setTimeout(() => {
