@@ -32,37 +32,37 @@ viewer._cesiumWidget._creditContainer.style.display = "none";
 
 const tilesetUrl = "/tiles/tileset.json";
 
-const tilesetUrl21 = "/tiles2/tiles1/tileset.json";
-const tilesetUrl22 = "/tiles2/tiles2/tileset.json";
-const tilesetUrl23 = "/tiles2/tiles3/tileset.json";
-const tilesetUrl24 = "/tiles2/tiles4/tileset.json";
+// const tilesetUrl21 = "/tiles2/tiles1/tileset.json";
+// const tilesetUrl22 = "/tiles2/tiles2/tileset.json";
+// const tilesetUrl23 = "/tiles2/tiles3/tileset.json";
+// const tilesetUrl24 = "/tiles2/tiles4/tileset.json";
 
-const tilesetUrl31 = "/tiles3/tiles1/tileset.json";
+// const tilesetUrl31 = "/tiles3/tiles1/tileset.json";
 
-const tilesetUrl41 = "/tiles4/tiles1/tileset.json";
-const tilesetUrl42 = "/tiles4/tiles2/tileset.json";
-const tilesetUrl43 = "/tiles4/tiles3/tileset.json";
+// const tilesetUrl41 = "/tiles4/tiles1/tileset.json";
+// const tilesetUrl42 = "/tiles4/tiles2/tileset.json";
+// const tilesetUrl43 = "/tiles4/tiles3/tileset.json";
 
-const tilesetUrl51 = "/tiles5/tiles1/tileset.json";
+// const tilesetUrl51 = "/tiles5/tiles1/tileset.json";
 
-const tilesetUrl61 = "/tiles6/tiles1/tileset.json";
+// const tilesetUrl61 = "/tiles6/tiles1/tileset.json";
 
 loadTiles(viewer, tilesetUrl);
 
-loadTiles(viewer, tilesetUrl31);
+// loadTiles(viewer, tilesetUrl31);
 
-loadTiles(viewer, tilesetUrl41);
-loadTiles(viewer, tilesetUrl42);
-loadTiles(viewer, tilesetUrl43);
+// loadTiles(viewer, tilesetUrl41);
+// loadTiles(viewer, tilesetUrl42);
+// loadTiles(viewer, tilesetUrl43);
 
-loadTiles(viewer, tilesetUrl51);
+// loadTiles(viewer, tilesetUrl51);
 
-loadTiles(viewer, tilesetUrl61);
+// loadTiles(viewer, tilesetUrl61);
 
-loadTiles(viewer, tilesetUrl21);
-loadTiles(viewer, tilesetUrl22);
-loadTiles(viewer, tilesetUrl23);
-loadTiles(viewer, tilesetUrl24);
+// loadTiles(viewer, tilesetUrl21);
+// loadTiles(viewer, tilesetUrl22);
+// loadTiles(viewer, tilesetUrl23);
+// loadTiles(viewer, tilesetUrl24);
 
 // 高亮元素
 const highlighted = {
@@ -261,8 +261,6 @@ window.addEventListener("message", function (event) {
 
       case "showRegionDivision":
         console.log("侦测到显示微网格需求");
-        // setGrid("/static/xingpu_grid.geojson")
-        // setGrid("/static/xihe_grid.geojson");
         setGrid("/static/assinGrid.geojson");
         break;
       case "hideRegionDivision":
@@ -778,7 +776,7 @@ function setGrid(url) {
         font: "12px Microsoft YaHei",
       });
     }
-    flyTobyType(wangge);
+    // flyTobyType(wangge);
   });
 }
 
