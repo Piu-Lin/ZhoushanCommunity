@@ -30,7 +30,8 @@ viewer._cesiumWidget._creditContainer.style.display = "none";
 
 // viewer.scene.globe.depthTestAgainstTerrain = true;
 
-const tilesetUrl = "/tiles/tileset.json";
+const tilesetUrl = "千岛街道2/tileset.json";
+// const tilesetUrl2 = "tiles2/tileset.json";
 
 // const tilesetUrl21 = "/tiles2/tiles1/tileset.json";
 // const tilesetUrl22 = "/tiles2/tiles2/tileset.json";
@@ -48,6 +49,7 @@ const tilesetUrl = "/tiles/tileset.json";
 // const tilesetUrl61 = "/tiles6/tiles1/tileset.json";
 
 loadTiles(viewer, tilesetUrl);
+// loadTiles(viewer, tilesetUrl2);
 
 // loadTiles(viewer, tilesetUrl31);
 
@@ -92,8 +94,8 @@ viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(event) {
   pickedFeature.color = Cesium.Color.RED;
   // 获取鼠标点击位置对应的地理坐标
   const cartesian = viewer.scene.camera.pickEllipsoid(
-    event.position,
-    viewer.scene.globe.ellipsoid
+      event.position,
+      viewer.scene.globe.ellipsoid
   );
 
   if (cartesian) {
@@ -165,8 +167,8 @@ window.addEventListener("message", function (event) {
   const origin = event.origin;
   try {
     if (
-      event.source !== window.parent ||
-      JSON.stringify(message).includes("cesiumMap")
+        event.source !== window.parent ||
+        JSON.stringify(message).includes("cesiumMap")
     ) {
       return;
     }
@@ -354,8 +356,8 @@ function createPop(popDatArry) {
       console.log("未收到气泡图标数据,将使用默认数据");
     }
 
-    let popWidth = 30
-    let popHeight = 30
+    let popWidth = 8
+    let popHeight = 8
     if (popData.popSize) {
       popHeight = popData.popSize
       popWidth = popData.popSize
@@ -368,9 +370,9 @@ function createPop(popDatArry) {
     let eyeOffsetZ = -100;
     // 转换经纬度坐标为Cesium的笛卡尔坐标
     const poPosition = Cesium.Cartesian3.fromDegrees(
-      poplocation.x,
-      poplocation.y,
-      poplocation.z
+        poplocation.x,
+        poplocation.y,
+        poplocation.z
     );
     if (!popData.id) {
       console.error("popID缺失")
@@ -408,6 +410,8 @@ function createPop(popDatArry) {
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         scale: 1.0,
+        // 添加scaleByDistance以控制不同距离下的缩放效果
+        scaleByDistance: new Cesium.NearFarScalar(1.0, 0.5, 1000000.0, 0.1)
       },
     });
     // 将Entity添加到viewer中
@@ -463,9 +467,9 @@ function handleFlyTo(data) {
   const time = data.time;
 
   const targetPosition = Cesium.Cartesian3.fromDegrees(
-    Number(location.x),
-    Number(location.y),
-    Number(location.z)
+      Number(location.x),
+      Number(location.y),
+      Number(location.z)
   );
   // const targetHeading = Cesium.Math.toRadians(Number(rotation.X)); // 绕 Z 轴旋转 (heading)
   // const targetPitch = Cesium.Math.toRadians(Number(rotation.Y)); // 绕 X 轴旋转 (pitch)
@@ -530,16 +534,16 @@ function setLookDistance(data) {
   const maxDistance = data.max;
   const currentPosition = camera.positionWC;
   const currentPositionCartographic =
-    Cesium.Cartographic.fromCartesian(currentPosition);
+      Cesium.Cartographic.fromCartesian(currentPosition);
   const height = Cesium.Math.clamp(
-    currentPositionCartographic.height,
-    minDistance,
-    maxDistance
+      currentPositionCartographic.height,
+      minDistance,
+      maxDistance
   );
   const newPosition = Cesium.Cartesian3.fromDegrees(
-    Cesium.Math.toDegrees(currentPositionCartographic.longitude),
-    Cesium.Math.toDegrees(currentPositionCartographic.latitude),
-    height
+      Cesium.Math.toDegrees(currentPositionCartographic.longitude),
+      Cesium.Math.toDegrees(currentPositionCartographic.latitude),
+      height
   );
   camera.setView({
     destination: newPosition,
@@ -563,9 +567,9 @@ function flyTo(view) {
     position = Cesium.Cartesian3.fromDegrees(view[0], view[1], view[2] + 400);
   } else {
     position = Cesium.Cartesian3.fromDegrees(
-      view.longitude || view.x,
-      view.latitude || view.y,
-      view.height || view.z + 400
+        view.longitude || view.x,
+        view.latitude || view.y,
+        view.height || view.z + 400
     );
   }
   viewer.camera.flyTo({
@@ -580,10 +584,10 @@ function flyTo(view) {
 
 function consolePosition(move) {
   const longitude = Cesium.Math.toDegrees(
-    viewer.camera.positionCartographic.longitude
+      viewer.camera.positionCartographic.longitude
   ); // 经度
   const latitude = Cesium.Math.toDegrees(
-    viewer.camera.positionCartographic.latitude
+      viewer.camera.positionCartographic.latitude
   ); // 纬度
   const {height} = viewer.camera.positionCartographic; // 视角高
   const {heading} = viewer.camera; // 方向
@@ -610,9 +614,9 @@ function pickGlobl(viewer, windowPosition) {
   let position;
   const pickedObject = viewer.scene.pick(windowPosition) || {};
   if (
-    viewer.scene.pickPositionSupported &&
-    pickedObject &&
-    pickedObject.primitive instanceof Cesium.Cesium3DTileset
+      viewer.scene.pickPositionSupported &&
+      pickedObject &&
+      pickedObject.primitive instanceof Cesium.Cesium3DTileset
   ) {
     position = viewer.scene.pickPosition(windowPosition);
   } else {
@@ -646,16 +650,16 @@ function removeGrid(wangge) {
 
 function getHeight(data) {
   let position = new Cesium.Cartographic.fromDegrees(
-    parseFloat(data.longitude),
-    parseFloat(data.latitude)
+      parseFloat(data.longitude),
+      parseFloat(data.latitude)
   );
   let height = viewer.scene.sampleHeight(position);
   if (!height) {
     Cesium.when(
-      new Cesium.sampleTerrain(viewer.terrainProvider, 15, [position]),
-      (updatedPositions) => {
-        height = updatedPositions[0].height + 5;
-      }
+        new Cesium.sampleTerrain(viewer.terrainProvider, 15, [position]),
+        (updatedPositions) => {
+          height = updatedPositions[0].height + 5;
+        }
     );
   }
   return height || 22;
@@ -667,9 +671,9 @@ function getHeight(data) {
  */
 function addGridPolyline(entity, colors) {
   let color =
-    colors.find((item) => item.name === entity.type)?.color || randomColor();
+      colors.find((item) => item.name === entity.type)?.color || randomColor();
   entity.polygon.material =
-    Cesium.Color.fromCssColorString(color).withAlpha(0.7);
+      Cesium.Color.fromCssColorString(color).withAlpha(0.7);
   entity.polyline = {
     positions: entity.polygon.hierarchy._value.positions,
     width: 1,
@@ -681,21 +685,21 @@ function addGridPolyline(entity, colors) {
   let y = entity.properties.y ? entity.properties.y._value : "";
   if (x && y) {
     entity.position = Cesium.Cartesian3.fromDegrees(
-      parseFloat(x),
-      parseFloat(y),
-      getHeight({
-        longitude: x,
-        latitude: y,
-      })
+        parseFloat(x),
+        parseFloat(y),
+        getHeight({
+          longitude: x,
+          latitude: y,
+        })
     );
   } else {
     const polyPositions = entity.polygon.hierarchy.getValue(
-      Cesium.JulianDate.now()
+        Cesium.JulianDate.now()
     ).positions;
     let polyCenter = Cesium.BoundingSphere.fromPoints(polyPositions).center;
     polyCenter = Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter);
     const cartographic =
-      viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
+        viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
     let longitude = (cartographic.longitude * 180) / Math.PI;
     let latitude = (cartographic.latitude * 180) / Math.PI;
     entity.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 50);
@@ -717,17 +721,17 @@ function addLabel(entity, data) {
     fillColor: data.color || Cesium.Color.WHITE,
     showBackground: data?.showBackground,
     scaleByDistance: new Cesium.NearFarScalar(
-      data.far / 2 || 0,
-      1,
-      data.far || 10000,
-      0.5
+        data.far / 2 || 0,
+        1,
+        data.far || 10000,
+        0.5
     ), // 根据高度显示对应的缩放比例大小
     horizontalOrigin: Cesium.HorizontalOrigin.LEFT_CLICK,
     verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
     pixelOffset: new Cesium.Cartesian2(0, data.pixelOffsetY || -16),
     distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
-      data.near || 0,
-      data.far || 10000
+        data.near || 0,
+        data.far || 10000
     ),
     disableDepthTestDistance: 1e9,
   };
@@ -765,7 +769,7 @@ function setGrid(url) {
         {name: "第八网格", color: "#00a9b2"},
       ];
       entity.polygon.distanceDisplayCondition =
-        new Cesium.DistanceDisplayCondition(0, 160000);
+          new Cesium.DistanceDisplayCondition(0, 160000);
       addGridPolyline(entity, colors);
       addLabel(entity, {
         name,
@@ -787,17 +791,17 @@ function setGrid(url) {
 function flyToEntity(entity) {
   // 高亮显示
   const polyPositions = entity.polygon.hierarchy.getValue(
-    Cesium.JulianDate.now()
+      Cesium.JulianDate.now()
   ).positions;
   let polyCenter = Cesium.BoundingSphere.fromPoints(polyPositions).center;
   polyCenter = Cesium.Ellipsoid.WGS84.scaleToGeodeticSurface(polyCenter);
   const cartographic =
-    viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
+      viewer.scene.globe.ellipsoid.cartesianToCartographic(polyCenter);
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(
-      (cartographic.longitude * 180) / Math.PI,
-      (cartographic.latitude * 180) / Math.PI,
-      5000
+        (cartographic.longitude * 180) / Math.PI,
+        (cartographic.latitude * 180) / Math.PI,
+        5000
     ),
   });
 }
@@ -846,11 +850,11 @@ function createWall(Cesium, dataSource, line, color, time) {
   dataSource.entities.add({
     wall: {
       positions: new Cesium.Cartesian3.fromDegreesArrayHeights(
-        line,
+          line,
       ),
       material: new PolylineTrailLinkMaterialProperty(
-        color,
-        time
+          color,
+          time
       ),
     },
   });
@@ -918,7 +922,7 @@ function clearBorderLine(url) {
   removeLayer(bianjie);
 }
 
-function addCircleRipple(entity, height = 360, image = '/static/images/texture/colors28.png', maxR = 800) {
+function addCircleRipple(entity, height = 360, image = 'static/images/texture/colors28.png', maxR = 800) {
   let r1 = 0;
   let r2 = 0;
 
@@ -1004,7 +1008,7 @@ function addYuJing(popDatArry) {
       isEff: true,
       orientation: new Cesium.CallbackProperty(getAxisValue, false),
       model: {
-        uri: '/static/images/model/zhui.glb',
+        uri: 'images/model/zhui.glb',
         scale: 0.4,
         minimumPixelSize: 64,
         maximumScale: 100,
@@ -1023,7 +1027,7 @@ function addYuJing(popDatArry) {
       default:
         Animcolors = ""
     }
-    addCircleRipple(entity, coordinate.z, '/static/images/texture/' + Animcolors + '.png');
+    addCircleRipple(entity, coordinate.z, 'static/images/texture/' + Animcolors + '.png');
   })
 }
 
@@ -1082,7 +1086,7 @@ let poptest = [
     "hoverable": false,
     "clickable": false,
     "hadWebClick": false,
-    "popSize": 30
+    "popSize": 10
   },
   {
     "id": "66c2a24b1aa3b1f3dab98c07",
@@ -1187,7 +1191,7 @@ setTimeout(() => {
   // 添加网格
   // setGrid("/static/xingpu_grid.geojson")
   // setGrid("/static/assinEdge.geojson")
-  // sendCameraInfo();
+  sendCameraInfo();
   // getcameraPosInfo();
   // createPop(poptest);
   // 电子围栏
@@ -1204,6 +1208,7 @@ setTimeout(() => {
   //   types: ['grid'],
   // });
 
+  // createPop(poptest);
   // clearBorderLine('/static/xingpu_grid_bianjie.geojson');
   // clearYuJing(poptest);
   // removeGrid("xingpu_grid");

@@ -5,7 +5,7 @@
  *  image 图片
  **/
 function polylineTrailLinkMaterial(Cesium) {
-  let PolylineTrailLinkImage = '/static/images/texture/colors10.png';
+  let PolylineTrailLinkImage = 'static/images/texture/colors10.png';
 
   function PolylineTrailLinkMaterialProperty(color, duration, image) {
     this._definitionChanged = new Cesium.Event();
@@ -48,8 +48,8 @@ function polylineTrailLinkMaterial(Cesium) {
 
   PolylineTrailLinkMaterialProperty.prototype.equals = function (other) {
     return this === other ||
-      (other instanceof PolylineTrailLinkMaterialProperty &&
-        Cesium.Property.equals(this._color, other._color));
+        (other instanceof PolylineTrailLinkMaterialProperty &&
+            Cesium.Property.equals(this._color, other._color));
   };
 
   // 使用 Cesium 的材质注册系统来添加材质
