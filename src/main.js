@@ -30,7 +30,8 @@ viewer._cesiumWidget._creditContainer.style.display = "none";
 
 // viewer.scene.globe.depthTestAgainstTerrain = true;
 
-const tilesetUrl = "千岛街道2/tileset.json";
+// const tilesetUrl = "千岛街道2/tileset.json";
+const tilesetUrl = "tiles/tileset.json";
 // const tilesetUrl2 = "tiles2/tileset.json";
 
 // const tilesetUrl21 = "/tiles2/tiles1/tileset.json";

@@ -104,47 +104,85 @@ export function loadTiles(viewer, tilesetUrl) {
      */
     const tilesetOptions = {
         url: tilesetUrl,
-        maximumScreenSpaceError: 20,
-        dynamicScreenSpaceError: true,
-        skipLevelOfDetail: false,
-        baseScreenSpaceError: 20,
-        skipScreenSpaceErrorFactor: 20,
+        skipScreenSpaceErrorFactor: 5,
+        maximumScreenSpaceError: 5, // 更低的误差，提高模型精度
+        dynamicScreenSpaceError: true, // 动态调整误差
+        dynamicScreenSpaceErrorDensity: 0.002, // 根据设备性能优化
+        dynamicScreenSpaceErrorFactor: 4, // 精度因子
+        skipLevelOfDetail: false, // 禁止跳过 LOD，确保高分辨率
+        baseScreenSpaceError: 5, // 基础误差更低
         skipLevels: 1,
     };
 
     // 加载3D Tiles数据
+    // Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
+    //     .then((tileset) => {
+    //         // 将3D Tiles添加到场景中
+    //         viewer.scene.primitives.add(tileset);
+    //
+    //         // 计算 boundingSphere 中心位置
+    //         const boundingSphere = tileset.boundingSphere;
+    //         const cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
+    //         const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
+    //
+    //         // 计算偏移后的目标位置
+    //         const position = Cesium.Cartesian3.fromRadians(
+    //             cartographic.longitude,
+    //             cartographic.latitude,
+    //             surfaceHeight + heightOffset || heightOffset
+    //         );
+    //
+    //         // 计算并设置模型的变换矩阵
+    //         const translation = Cesium.Cartesian3.subtract(position, boundingSphere.center, new Cesium.Cartesian3());
+    //         tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    //
+    //         // 确保视图聚焦到加载的 tileset
+    //         return viewer.zoomTo(tileset);
+    //     })
+    //     .then(() => {
+    //         // 输出数据加载完成的信息
+    //         console.log("数据加载完成");
+    //         // 通知父窗口，数据加载完成
+    //         window.parent.postMessage({type: "engineFinished"}, "*");
+    //     })
+    //     .catch((error) => {
+    //         // 错误处理
+    //         console.error("加载3D Tiles数据集时发生错误：", error);
+    //     });
+
     Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
         .then((tileset) => {
-            // 将3D Tiles添加到场景中
             viewer.scene.primitives.add(tileset);
 
-            // 计算 boundingSphere 中心位置
+            // 计算偏移位置
             const boundingSphere = tileset.boundingSphere;
             const cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
             const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
 
-            // 计算偏移后的目标位置
             const position = Cesium.Cartesian3.fromRadians(
                 cartographic.longitude,
                 cartographic.latitude,
                 surfaceHeight + heightOffset || heightOffset
             );
 
-            // 计算并设置模型的变换矩阵
             const translation = Cesium.Cartesian3.subtract(position, boundingSphere.center, new Cesium.Cartesian3());
             tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
-            // 确保视图聚焦到加载的 tileset
-            return viewer.zoomTo(tileset);
+            // 设置动态分辨率和错误控制
+            tileset.maximumScreenSpaceError = 5; // 在远距离时仍保持较高精度
+            tileset.dynamicScreenSpaceError = true;
+            tileset.dynamicScreenSpaceErrorDensity = 0.002;
+            tileset.dynamicScreenSpaceErrorFactor = 4;
+
+            // 确保视角远距离模型不失真
+            return viewer.flyTo(tileset, {
+                offset: new Cesium.HeadingPitchRange(0, -0.5, boundingSphere.radius * 2.0),
+            });
         })
         .then(() => {
-            // 输出数据加载完成的信息
-            console.log("数据加载完成");
-            // 通知父窗口，数据加载完成
-            window.parent.postMessage({type: "engineFinished"}, "*");
+            console.log("3D Tiles 数据加载完成，精度优化生效");
         })
         .catch((error) => {
-            // 错误处理
-            console.error("加载3D Tiles数据集时发生错误：", error);
+            console.error("加载 3D Tiles 数据集时发生错误：", error);
         });
 }
