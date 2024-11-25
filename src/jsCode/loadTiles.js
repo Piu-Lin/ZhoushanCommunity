@@ -68,7 +68,7 @@ import * as Cesium from "cesium";
 // };
 
 export function loadTiles(viewer, tilesetUrl) {
-    let heightOffset = 60.0;
+    let heightOffset = 45.0;
     // 配置参数
     if (tilesetUrl === "/tiles2/tiles2/tileset.json") {
         heightOffset = 37.0; // 偏移高度，根据需要调整
@@ -115,74 +115,74 @@ export function loadTiles(viewer, tilesetUrl) {
     };
 
     // 加载3D Tiles数据
-    // Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
-    //     .then((tileset) => {
-    //         // 将3D Tiles添加到场景中
-    //         viewer.scene.primitives.add(tileset);
-    //
-    //         // 计算 boundingSphere 中心位置
-    //         const boundingSphere = tileset.boundingSphere;
-    //         const cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
-    //         const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
-    //
-    //         // 计算偏移后的目标位置
-    //         const position = Cesium.Cartesian3.fromRadians(
-    //             cartographic.longitude,
-    //             cartographic.latitude,
-    //             surfaceHeight + heightOffset || heightOffset
-    //         );
-    //
-    //         // 计算并设置模型的变换矩阵
-    //         const translation = Cesium.Cartesian3.subtract(position, boundingSphere.center, new Cesium.Cartesian3());
-    //         tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-    //
-    //         // 确保视图聚焦到加载的 tileset
-    //         return viewer.zoomTo(tileset);
-    //     })
-    //     .then(() => {
-    //         // 输出数据加载完成的信息
-    //         console.log("数据加载完成");
-    //         // 通知父窗口，数据加载完成
-    //         window.parent.postMessage({type: "engineFinished"}, "*");
-    //     })
-    //     .catch((error) => {
-    //         // 错误处理
-    //         console.error("加载3D Tiles数据集时发生错误：", error);
-    //     });
-
     Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
         .then((tileset) => {
+            // 将3D Tiles添加到场景中
             viewer.scene.primitives.add(tileset);
 
-            // 计算偏移位置
+            // 计算 boundingSphere 中心位置
             const boundingSphere = tileset.boundingSphere;
             const cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
             const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
 
+            // 计算偏移后的目标位置
             const position = Cesium.Cartesian3.fromRadians(
                 cartographic.longitude,
                 cartographic.latitude,
                 surfaceHeight + heightOffset || heightOffset
             );
 
+            // 计算并设置模型的变换矩阵
             const translation = Cesium.Cartesian3.subtract(position, boundingSphere.center, new Cesium.Cartesian3());
             tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
-            // 设置动态分辨率和错误控制
-            tileset.maximumScreenSpaceError = 5; // 在远距离时仍保持较高精度
-            tileset.dynamicScreenSpaceError = true;
-            tileset.dynamicScreenSpaceErrorDensity = 0.002;
-            tileset.dynamicScreenSpaceErrorFactor = 4;
-
-            // 确保视角远距离模型不失真
-            return viewer.flyTo(tileset, {
-                offset: new Cesium.HeadingPitchRange(0, -0.5, boundingSphere.radius * 2.0),
-            });
+            // 确保视图聚焦到加载的 tileset
+            return viewer.zoomTo(tileset);
         })
         .then(() => {
-            console.log("3D Tiles 数据加载完成，精度优化生效");
+            // 输出数据加载完成的信息
+            console.log("数据加载完成");
+            // 通知父窗口，数据加载完成
+            window.parent.postMessage({type: "engineFinished"}, "*");
         })
         .catch((error) => {
-            console.error("加载 3D Tiles 数据集时发生错误：", error);
+            // 错误处理
+            console.error("加载3D Tiles数据集时发生错误：", error);
         });
+
+    // Cesium.Cesium3DTileset.fromUrl(tilesetUrl, tilesetOptions)
+    //     .then((tileset) => {
+    //         viewer.scene.primitives.add(tileset);
+    //
+    //         // 计算偏移位置
+    //         const boundingSphere = tileset.boundingSphere;
+    //         const cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
+    //         const surfaceHeight = viewer.scene.globe.getHeight(cartographic);
+    //
+    //         const position = Cesium.Cartesian3.fromRadians(
+    //             cartographic.longitude,
+    //             cartographic.latitude,
+    //             surfaceHeight + heightOffset || heightOffset
+    //         );
+    //
+    //         const translation = Cesium.Cartesian3.subtract(position, boundingSphere.center, new Cesium.Cartesian3());
+    //         tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    //
+    //         // 设置动态分辨率和错误控制
+    //         tileset.maximumScreenSpaceError = 5; // 在远距离时仍保持较高精度
+    //         tileset.dynamicScreenSpaceError = true;
+    //         tileset.dynamicScreenSpaceErrorDensity = 0.002;
+    //         tileset.dynamicScreenSpaceErrorFactor = 4;
+    //
+    //         // 确保视角远距离模型不失真
+    //         return viewer.flyTo(tileset, {
+    //             offset: new Cesium.HeadingPitchRange(0, -0.5, boundingSphere.radius * 2.0),
+    //         });
+    //     })
+    //     .then(() => {
+    //         console.log("3D Tiles 数据加载完成，精度优化生效");
+    //     })
+    //     .catch((error) => {
+    //         console.error("加载 3D Tiles 数据集时发生错误：", error);
+    //     });
 }
