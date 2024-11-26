@@ -105,13 +105,21 @@ export function loadTiles(viewer, tilesetUrl) {
     const tilesetOptions = {
         url: tilesetUrl,
         skipScreenSpaceErrorFactor: 5,
-        maximumScreenSpaceError: 5, // 更低的误差，提高模型精度
+        // maximumScreenSpaceError: 5, // 更低的误差，提高模型精度
         dynamicScreenSpaceError: true, // 动态调整误差
-        dynamicScreenSpaceErrorDensity: 0.002, // 根据设备性能优化
-        dynamicScreenSpaceErrorFactor: 4, // 精度因子
-        skipLevelOfDetail: false, // 禁止跳过 LOD，确保高分辨率
-        baseScreenSpaceError: 5, // 基础误差更低
-        skipLevels: 1,
+        // dynamicScreenSpaceErrorDensity: 0.002, // 根据设备性能优化
+        // dynamicScreenSpaceErrorFactor: 10, // 精度因子
+        // skipLevelOfDetail: false, // 禁止跳过 LOD，确保高分辨率
+        // // baseScreenSpaceError: 5, // 基础误差更低
+        // skipLevels: 1,
+        maximumScreenSpaceError: 16, // 增加误差值
+        baseScreenSpaceError: 16, // 增加基础误差值
+        dynamicScreenSpaceErrorDensity: 0.01, // 根据设备性能优化
+        dynamicScreenSpaceErrorFactor: 16, // 精度因子
+        skipLevelOfDetail: false, // 允许跳过 LOD
+        skipLevels: 2, // 跳过更多级别
+        cacheBytes: 1024 * 1024 * 1024, // 增加缓存大小到1GB
+        maximumCacheOverflowBytes: 1024 * 1024 * 1024, // 允许缓存溢出1GB
     };
 
     // 加载3D Tiles数据
