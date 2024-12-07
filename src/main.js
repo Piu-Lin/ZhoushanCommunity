@@ -186,7 +186,6 @@ window.addEventListener("message", function (event) {
       case "flyTo":
         console.log("侦测到设置相机位置需求");
         handleFlyTo(payload);
-
         break;
       case "startRoate":
         console.log("侦测到开始旋转需求");
@@ -873,6 +872,8 @@ function initBorderLine(url) {
   }).then((dataSource) => {
     dataSource.name = bianjie;
     dataSource.entities.values.forEach((entitie) => {
+      console.log(dataSource, "dataSource");
+      console.log(entitie, "entitie.polyline");
       const {ellipsoid} = viewer.scene.globe;
       const line = [];
       entitie.polyline.positions._value.forEach((position) => {
@@ -1217,7 +1218,9 @@ setTimeout(() => {
   // paseFeiXing();
   // createPop(poptest);
   console.log(getcameraPosInfo())
-}, 12000);
+
+  initBorderLine('/static/assinEdge.geojson');
+}, 4000);
 
 setTimeout(() => {
   // startFeiXing();
